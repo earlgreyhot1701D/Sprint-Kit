@@ -1,0 +1,170 @@
+import React, { useState } from 'react';
+import { api } from '../utils/api';
+
+export default function Export({ projectState, onBack }) {
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    setDownloading(true);
+    try {
+      await api.exportPDF(projectState);
+    } catch (error) {
+      alert('Could not download PDF. Try copying to clipboard instead.');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const handleCopyToClipboard = () => {
+    const text = `
+╔════════════════════════════════════════════════════════════════════╗
+║                        PROJECT PLAN SUMMARY                       ║
+╚════════════════════════════════════════════════════════════════════╝
+
+📋 PROJECT: ${projectState.title}
+   Description: ${projectState.description}
+
+🎯 GOAL: ${projectState.goals?.goal}
+
+👥 TEAM: ${projectState.teamMembers?.join(', ')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 TASKS:
+${projectState.tasks?.map((t) => `  • ${t.name} (${t.hours}h, ${t.difficulty}) → ${t.assigned_to}`).join('\n')}
+
+⏱️ TIMELINE:
+   Total Work: ${projectState.timeline?.total_hours} hours
+   Deadline: ${projectState.timeline?.deadline}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🤔 REFLECTION:
+   What Went Well:
+   ${projectState.reflection?.went_well}
+
+   What Was Hard:
+   ${projectState.reflection?.was_hard}
+
+   What I Learned:
+   ${projectState.reflection?.learned}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${projectState.insights?.length > 0 ? `💡 KEY INSIGHTS:\n${projectState.insights?.map((i) => `   • ${i}`).join('\n')}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` : ''}🏆 BADGES EARNED:
+${projectState.badges?.map((b) => `   ${b.emoji || '🏆'} ${b.name}: ${b.reason}`).join('\n')}
+
+═══════════════════════════════════════════════════════════════════════
+    `.trim();
+
+    navigator.clipboard.writeText(text);
+    alert('✓ Copied to clipboard!');
+  };
+
+  return (
+    <div className="step-container">
+      <h2>📊 Your Project Plan</h2>
+
+      <div className="project-summary">
+        <h3>{projectState.title}</h3>
+
+        <div className="summary-section">
+          <h4>Goal</h4>
+          <p>{projectState.goals?.goal}</p>
+        </div>
+
+        <div className="summary-section">
+          <h4>Team</h4>
+          <p>{projectState.teamMembers?.join(', ')}</p>
+        </div>
+
+        <div className="summary-section">
+          <h4>Tasks</h4>
+          <ul>
+            {projectState.tasks?.map((task, idx) => (
+              <li key={idx}>
+                <strong>{task.name}</strong> ({task.hours}h, {task.difficulty}) →{' '}
+                {task.assigned_to}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="summary-section">
+          <h4>Timeline</h4>
+          <p>
+            Total: {projectState.timeline?.total_hours} hours | Deadline:{' '}
+            {projectState.timeline?.deadline}
+          </p>
+        </div>
+
+        <div className="summary-section">
+          <h4>What We Learned</h4>
+          <p>
+            <strong>Went Well:</strong> {projectState.reflection?.went_well}
+          </p>
+          <p>
+            <strong>Was Hard:</strong> {projectState.reflection?.was_hard}
+          </p>
+          <p>
+            <strong>I Learned:</strong> {projectState.reflection?.learned}
+          </p>
+        </div>
+
+        {projectState.insights?.length > 0 && (
+          <div className="summary-section">
+            <h4>Key Insights</h4>
+            <ul>
+              {projectState.insights.map((insight, idx) => (
+                <li key={idx}>{insight}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {projectState.badges?.length > 0 && (
+          <div className="summary-section">
+            <h4>Badges Earned</h4>
+            <div className="badges-summary">
+              {projectState.badges.map((badge, idx) => (
+                <div key={idx} className="badge-summary">
+                  {badge.emoji || '🏆'} <strong>{badge.name}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="download-section">
+        <h3>Download Your Plan</h3>
+        <div className="download-buttons">
+          <button
+            onClick={handleDownloadPDF}
+            disabled={downloading}
+            className="btn-primary"
+          >
+            {downloading ? 'Generating PDF...' : '📄 Download as PDF'}
+          </button>
+          <button onClick={handleCopyToClipboard} className="btn-secondary">
+            📋 Copy to Clipboard
+          </button>
+        </div>
+      </div>
+
+      <div className="completion-message">
+        <h3>🎉 You Did It!</h3>
+        <p>
+          You planned a real project, learned about decomposition, estimation, and
+          collaboration. That's what real learners do!
+        </p>
+      </div>
+
+      <div className="form-actions">
+        <button onClick={onBack} className="btn-secondary">
+          ← Back
+        </button>
+      </div>
+    </div>
+  );
+}
