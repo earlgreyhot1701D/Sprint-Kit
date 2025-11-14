@@ -1,6 +1,7 @@
 """
 Sprint Kit Backend Configuration
 Centralized settings for safety, API, and environment.
+CRITICAL: Child safety is non-negotiable.
 """
 
 import os
@@ -8,19 +9,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# ===== API CONFIGURATION =====
-CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
+# ===== ENVIRONMENT & DEBUG =====
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+FLASK_ENV = os.getenv("FLASK_ENV", "development")
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
+FLASK_DEBUG = DEBUG
+
+# ===== CLAUDE API CONFIGURATION =====
+CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
 CLAUDE_MODEL = "claude-3-5-sonnet-20241022"
 MAX_TOKENS = 1000
 
-# ===== FLASK CONFIGURATION =====
-FLASK_ENV = os.getenv("FLASK_ENV", "development")
-FLASK_DEBUG = DEBUG
-
-# ===== CHILD SAFETY CONFIGURATION =====
-# These are non-negotiable boundaries for Sprint Kit
+# ===== CHILD SAFETY: SCOPE BOUNDARIES =====
+# Sprint Kit teaches project planning ONLY. These are hard boundaries.
 
 ALLOWED_PROJECT_TYPES = [
     "school project",
@@ -33,22 +34,28 @@ ALLOWED_PROJECT_TYPES = [
 ]
 
 DISALLOWED_KEYWORDS = [
-    "homework help",
-    "essay writing",
+    # Academic dishonesty
+    "homework",
+    "essay",
     "test answers",
+    "answers",
     "cheating",
+
+    # Personal/mental health
     "personal",
     "family",
     "relationship",
     "dating",
     "depression",
+    "depressed",
     "anxiety",
     "self-harm",
+    "suicide",
     "bullying"
 ]
 
 OUT_OF_SCOPE_RESPONSE = """
-I can help you plan projects for school or teams. But that question is outside 
+I can help you plan projects for school or teams. But that question is outside
 what I'm designed for.
 
 If you need help with:
@@ -59,18 +66,21 @@ If you need help with:
 Let's get back to planning your project. What's your goal?
 """
 
+# ===== CHILD SAFETY: PROMPT INJECTION PROTECTION =====
 PROMPT_INJECTION_KEYWORDS = [
     "system prompt",
     "ignore",
     "forget",
     "pretend",
     "you are now",
-    "as an AI",
+    "as an ai",
     "from now on",
-    "role play"
+    "role play",
+    "roleplay"
 ]
 
-# ===== BADGE CONFIGURATION =====
+# ===== BADGES: AUTHENTIC GAMIFICATION =====
+# Badges tied to REAL learning, not generic points
 BADGE_DEFINITIONS = {
     "break_it_down": {
         "name": "I Can Break It Down",
@@ -89,7 +99,7 @@ BADGE_DEFINITIONS = {
     }
 }
 
-# ===== FALLBACK DATA =====
+# ===== FALLBACK: IF CLAUDE FAILS, APP STILL WORKS =====
 FALLBACK_TASKS = [
     {"task": "Plan your project", "hours": 2, "difficulty": "Easy"},
     {"task": "Gather resources or materials", "hours": 1, "difficulty": "Easy"},
