@@ -135,12 +135,35 @@ def validate_timeline(tasks: list, deadline_date: str) -> dict:
     }
     """
     try:
+        # Validate that all tasks have positive hours
+        for task in tasks:
+            hours = float(task.get('hours', 0))
+            if hours <= 0:
+                return {
+                    "status": "error",
+                    "total_hours": 0,
+                    "available_hours": 0,
+                    "message": "All tasks must have at least 1 hour of work.",
+                    "realistic": False
+                }
+
         # Calculate total work hours
         total_hours = sum(float(task.get('hours', 0)) for task in tasks)
-        
+
         # Parse deadline
         deadline = datetime.fromisoformat(deadline_date)
         now = datetime.now()
+
+        # Check if deadline is in the past
+        if deadline < now:
+            return {
+                "status": "error",
+                "total_hours": int(total_hours),
+                "available_hours": 0,
+                "message": "Your deadline is in the past! Pick a future date.",
+                "realistic": False
+            }
+
         days_available = max((deadline - now).days, 1)  # At least 1 day
         
         # Assume 2 hours max per day for school work
