@@ -58,7 +58,7 @@ export default function ProjectCreate({ projectState, onNext }) {
     });
 
     setLoading(false);
-  };;
+  };
 
   return (
     <div className="step-container">
