@@ -29,7 +29,6 @@ export default function BreakItDown({ projectState, onNext, onBack, onUpdate }) 
       setTasks(result.data.tasks);
     } else {
       setError('Could not generate tasks. Using template instead.');
-      // Fallback is handled by backend
     }
 
     setLoading(false);
@@ -60,7 +59,6 @@ export default function BreakItDown({ projectState, onNext, onBack, onUpdate }) 
       return;
     }
 
-    // Format tasks for storage
     const formattedTasks = tasks.map((task) => ({
       name: task.task || task.name || 'Unnamed Task',
       hours: parseInt(task.hours) || 1,
@@ -72,6 +70,22 @@ export default function BreakItDown({ projectState, onNext, onBack, onUpdate }) 
     onNext();
   };
 
+  // Get methodology-aware hint based on project type
+  const getHint = () => {
+    const projectType = projectState.project_type || 'other';
+
+    const hints = {
+      hardware: "💡 For hardware projects: Include tasks for materials, design/planning, building, assembly, testing, and troubleshooting. Break down the building into smaller pieces.",
+      software: "💡 For coding projects: Include tasks for planning features, writing code, testing/debugging, and optimization. Smaller functions = easier to manage.",
+      creative: "💡 For creative projects: Include tasks for brainstorming, creating content, editing/refining, getting feedback, and finalization. Don't skip the editing step!",
+      event: "💡 For events: Include tasks for planning, promotion, setup, running the event, and cleanup. Good coordination = happy event.",
+      research: "💡 For research projects: Include tasks for finding sources, reading/analyzing, synthesizing findings, writing, and presenting. Quality sources matter!",
+      other: "💡 AI helped break down your project. Edit tasks to match what YOUR team actually needs to do."
+    };
+
+    return hints[projectType] || hints.other;
+  };
+
   return (
     <div className="step-container">
       <h2>🔨 Break It Down Into Tasks</h2>
@@ -81,10 +95,7 @@ export default function BreakItDown({ projectState, onNext, onBack, onUpdate }) 
       </p>
 
       <div className="hint-box">
-        <p>
-          💡 Claude is helping you think about smaller tasks. These are steps your team can
-          actually do.
-        </p>
+        <p>{getHint()}</p>
       </div>
 
       {loading && (
@@ -94,7 +105,6 @@ export default function BreakItDown({ projectState, onNext, onBack, onUpdate }) 
           </div>
           <p className="loading-text">⏳ Claude is breaking down your project into tasks...</p>
 
-          {/* Skeleton placeholder */}
           <div className="skeleton-tasks">
             {[1, 2, 3, 4, 5].map(i => (
               <div key={i} className="skeleton-task">

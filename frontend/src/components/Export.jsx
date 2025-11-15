@@ -17,22 +17,19 @@ export default function Export({ projectState, onBack, onStartOver }) {
   };
 
   const handleCopyToClipboard = () => {
-    // Build reflection text based on new or old format
     let reflectionText = '';
     if (projectState.reflection?.prompts?.length > 0) {
-      // New format: show Q+A pairs
       reflectionText = projectState.reflection.prompts
         .map((prompt, idx) => `Q: ${prompt}\nA: ${projectState.reflection.answers[idx]}`)
         .join('\n\n');
     } else {
-      // Old format: fallback
       reflectionText = `Went Well:\n${projectState.reflection?.went_well}\n\nWas Hard:\n${projectState.reflection?.was_hard}\n\nWould Do Differently:\n${projectState.reflection?.differently}`;
     }
 
     const text = `
-╔════════════════════════════════════════════════════════════════════╗
-║                        PROJECT PLAN SUMMARY                       ║
-╚════════════════════════════════════════════════════════════════════╝
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                        PROJECT PLAN SUMMARY                              ║
+╚═══════════════════════════════════════════════════════════════════════════╝
 
 📋 PROJECT: ${projectState.title}
    Description: ${projectState.description}
@@ -41,7 +38,7 @@ export default function Export({ projectState, onBack, onStartOver }) {
 
 👥 TEAM: ${projectState.teamMembers?.join(', ')}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+───────────────────────────────────────────────────────────────────────────
 
 📝 TASKS:
 ${projectState.tasks?.map((t) => `  • ${t.name} (${t.hours}h, ${t.difficulty}) → ${t.assigned_to}`).join('\n')}
@@ -50,22 +47,38 @@ ${projectState.tasks?.map((t) => `  • ${t.name} (${t.hours}h, ${t.difficulty})
    Total Work: ${projectState.timeline?.total_hours} hours
    Deadline: ${projectState.timeline?.deadline}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+───────────────────────────────────────────────────────────────────────────
 
 🤔 REFLECTION:
 ${reflectionText}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+───────────────────────────────────────────────────────────────────────────
 
-${projectState.insights?.length > 0 ? `💡 KEY INSIGHTS:\n${projectState.insights?.map((i) => `   • ${i}`).join('\n')}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` : ''}🏆 BADGES EARNED:
+${projectState.insights?.length > 0 ? `💡 KEY INSIGHTS:\n${projectState.insights?.map((i) => `   • ${i}`).join('\n')}\n\n───────────────────────────────────────────────────────────────────────────\n\n` : ''}🏆 BADGES EARNED:
 ${projectState.badges?.map((b) => `   ${b.emoji || '🏆'} ${b.name}: ${b.reason}`).join('\n')}
 
-═══════════════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════════════════
     `.trim();
 
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Get project-type-specific hints
+  const getExportHint = () => {
+    const projectType = projectState.project_type || 'other';
+
+    const hints = {
+      hardware: "📤 Download your plan to show your team or teacher. Keep this plan handy—you'll want to reference it as you build!",
+      software: "📤 Your code repo is your real deliverable, but this plan shows your process. Great for documentation!",
+      creative: "📤 Share your plan with your team to show how you managed the creative process from start to finish.",
+      event: "📤 Use this to show how you organized an event. Your planning matters as much as the event itself!",
+      research: "📤 This shows your research methodology. Include it with your final findings—good process = credible research.",
+      other: "📤 You've got your complete project plan. Share it, print it, or save it for next time!"
+    };
+
+    return hints[projectType] || hints.other;
   };
 
   return (
@@ -90,8 +103,7 @@ ${projectState.badges?.map((b) => `   ${b.emoji || '🏆'} ${b.name}: ${b.reason
           <ul>
             {projectState.tasks?.map((task, idx) => (
               <li key={idx}>
-                <strong>{task.name}</strong> ({task.hours}h, {task.difficulty}) →{' '}
-                {task.assigned_to}
+                <strong>{task.name}</strong> ({task.hours}h, {task.difficulty}) → {task.assigned_to}
               </li>
             ))}
           </ul>
@@ -159,6 +171,9 @@ ${projectState.badges?.map((b) => `   ${b.emoji || '🏆'} ${b.name}: ${b.reason
 
       <div className="download-section">
         <h3>Download Your Plan</h3>
+        <div className="hint-box">
+          <p>{getExportHint()}</p>
+        </div>
         <div className="download-buttons">
           <button
             onClick={handleDownloadPDF}
@@ -182,8 +197,11 @@ ${projectState.badges?.map((b) => `   ${b.emoji || '🏆'} ${b.name}: ${b.reason
       </div>
 
       <div className="form-actions">
+        <button onClick={onBack} className="btn-secondary">
+          ← Back to Reflection
+        </button>
         <button onClick={onStartOver} className="btn-secondary">
-          🔄 Start Over
+          📄 Start Over
         </button>
       </div>
     </div>
