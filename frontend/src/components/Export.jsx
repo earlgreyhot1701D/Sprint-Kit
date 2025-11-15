@@ -55,8 +55,7 @@ ${reflectionText}
 
 ───────────────────────────────────────────────────────────────────────────
 
-${projectState.insights?.length > 0 ? `💡 KEY INSIGHTS:\n${projectState.insights?.map((i) => `   • ${i}`).join('\n')}\n\n───────────────────────────────────────────────────────────────────────────\n\n` : ''}🏆 BADGES EARNED:
-${projectState.badges?.map((b) => `   ${b.emoji || '🏆'} ${b.name}: ${b.reason}`).join('\n')}
+${projectState.insights?.length > 0 ? `💡 KEY INSIGHTS:\n${projectState.insights?.map((i) => `   • ${i}`).join('\n')}\n\n───────────────────────────────────────────────────────────────────────────\n\n` : ''}${projectState.badges?.length > 0 ? `🏆 BADGES EARNED:\n${projectState.badges?.map((b) => `   ${b.emoji || '🏆'} ${b.name}: ${b.reason}`).join('\n')}\n\n───────────────────────────────────────────────────────────────────────────` : ''}
 
 ═══════════════════════════════════════════════════════════════════════════
     `.trim();
