@@ -113,24 +113,39 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
     // Show loading state while generating insights
     setGeneratingInsights(true);
 
-    // Generate insights based on their answers
+    // Calculate timeline accuracy (if timeline data available)
+    // timeline_accuracy = estimated hours / actual hours (default 1.0 = perfect estimate)
+    let timelineAccuracy = 1.0;
+    if (projectState.timeline?.total_hours && projectState.timeline?.total_hours > 0) {
+      // For now, we use the original estimate as both estimated and actual
+      // In a real app, this would compare estimated vs actual completion time
+      timelineAccuracy = 1.0;
+    }
+
+    // Generate insights and badges based on their answers
     const insightsResult = await api.generateReflectionInsights(
       projectState.title,
       projectState.project_type || 'other',
       {
         prompts: reflectionPrompts,
         answers: reflectionAnswers
-      }
+      },
+      projectState.tasksEdited || false,
+      timelineAccuracy
     );
 
     setGeneratingInsights(false);
 
-    // Extract insights
+    // Extract insights and badges
     const insights = insightsResult.success && insightsResult.data.insights
       ? insightsResult.data.insights
       : [];
 
-    // Update state with insights (reflection already synced via useEffect)
+    const badges = insightsResult.success && insightsResult.data.badges
+      ? insightsResult.data.badges
+      : [];
+
+    // Update state with insights AND badges (reflection already synced via useEffect)
     onUpdate({
       reflection: {
         prompts: reflectionPrompts,
@@ -139,7 +154,8 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
         was_hard: reflectionAnswers[1] || '',
         learned: reflectionAnswers[2] || ''
       },
-      insights
+      insights,
+      badges
     });
 
     // Small delay to ensure state update completes before navigation

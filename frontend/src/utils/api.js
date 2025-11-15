@@ -177,8 +177,8 @@ export const api = {
     }
   },
 
-  // Reflection insights - UPDATED to support NEW format (prompts + answers)
-  generateReflectionInsights: async (projectTitle, projectType, reflection) => {
+  // Reflection insights - UPDATED to support NEW format (prompts + answers) AND badge generation
+  generateReflectionInsights: async (projectTitle, projectType, reflection, tasksEdited = false, timelineAccuracy = 1.0) => {
     try {
       const response = await fetch(`${API_BASE}/api/projects/reflection-insights`, {
         method: 'POST',
@@ -186,7 +186,9 @@ export const api = {
         body: JSON.stringify({
           title: projectTitle,
           project_type: projectType || 'other',
-          reflection
+          reflection,
+          tasks_edited: tasksEdited,
+          timeline_accuracy: timelineAccuracy
         })
       });
       const data = await response.json();
