@@ -37,12 +37,14 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
       setReflectionAnswers(new Array(result.data.prompts.length).fill(''));
     } else {
       setPromptsError('Could not load custom prompts. Using defaults.');
-      setReflectionPrompts([
+      const defaultPrompts = [
         'What went well with your project?',
         'What was hard or challenging?',
         'What did you learn about yourself?'
-      ]);
-      setReflectionAnswers(['', '', '']);
+      ];
+      // Fix #6: Dynamically create answers array based on prompts length
+      setReflectionPrompts(defaultPrompts);
+      setReflectionAnswers(new Array(defaultPrompts.length).fill(''));
     }
 
     setLoadingPrompts(false);

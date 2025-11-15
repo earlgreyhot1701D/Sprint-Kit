@@ -18,12 +18,12 @@ export default function AssignRoles({ projectState, onNext, onBack, onUpdate }) 
     return Math.max(1, diffDays); // At least 1 day
   }
 
-  // Only validate timeline when user picks a date
+  // Fix #3: Add dateSelected to dependency array to prevent race condition
   useEffect(() => {
     if (deadline && dateSelected) {
       validateTimeline();
     }
-  }, [deadline]);
+  }, [deadline, dateSelected]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const validateTimeline = async () => {
     if (!deadline || !projectState.tasks || projectState.tasks.length === 0) return;
@@ -70,6 +70,12 @@ export default function AssignRoles({ projectState, onNext, onBack, onUpdate }) 
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Fix #4: Validate that tasks exist before checking assignments
+    if (!projectState.tasks || projectState.tasks.length === 0) {
+      alert('No tasks to assign! Please go back and add tasks.');
+      return;
+    }
 
     // Check that all tasks are assigned
     const unassigned = projectState.tasks.some(

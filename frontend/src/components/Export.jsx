@@ -19,8 +19,9 @@ export default function Export({ projectState, onBack, onStartOver }) {
   const handleCopyToClipboard = () => {
     let reflectionText = '';
     if (projectState.reflection?.prompts?.length > 0) {
+      // Fix #7: Safely access answers array with bounds checking
       reflectionText = projectState.reflection.prompts
-        .map((prompt, idx) => `Q: ${prompt}\nA: ${projectState.reflection.answers[idx]}`)
+        .map((prompt, idx) => `Q: ${prompt}\nA: ${projectState.reflection.answers?.[idx] || 'No answer provided'}`)
         .join('\n\n');
     } else {
       reflectionText = `Went Well:\n${projectState.reflection?.went_well}\n\nWas Hard:\n${projectState.reflection?.was_hard}\n\nWould Do Differently:\n${projectState.reflection?.differently}`;
@@ -41,7 +42,7 @@ export default function Export({ projectState, onBack, onStartOver }) {
 ───────────────────────────────────────────────────────────────────────────
 
 📝 TASKS:
-${projectState.tasks?.map((t) => `  • ${t.name} (${t.hours}h, ${t.difficulty}) → ${t.assigned_to}`).join('\n')}
+${projectState.tasks?.map((t) => `  • ${t.name} (${t.hours}h, ${t.difficulty}) → ${t.assigned_to || 'Unassigned'}`).join('\n')}
 
 ⏱️ TIMELINE:
    Total Work: ${projectState.timeline?.total_hours} hours
@@ -103,7 +104,7 @@ ${projectState.badges?.map((b) => `   ${b.emoji || '🏆'} ${b.name}: ${b.reason
           <ul>
             {projectState.tasks?.map((task, idx) => (
               <li key={idx}>
-                <strong>{task.name}</strong> ({task.hours}h, {task.difficulty}) → {task.assigned_to}
+                <strong>{task.name}</strong> ({task.hours}h, {task.difficulty}) → {task.assigned_to || 'Unassigned'}
               </li>
             ))}
           </ul>
@@ -124,7 +125,8 @@ ${projectState.badges?.map((b) => `   ${b.emoji || '🏆'} ${b.name}: ${b.reason
               {projectState.reflection.prompts.map((prompt, idx) => (
                 <div key={idx} className="qa-pair">
                   <p><strong>Q: {prompt}</strong></p>
-                  <p className="answer">A: {projectState.reflection.answers[idx]}</p>
+                  {/* Fix #7: Safely access answers array with bounds checking */}
+                  <p className="answer">A: {projectState.reflection.answers?.[idx] || 'No answer provided'}</p>
                 </div>
               ))}
             </div>

@@ -56,7 +56,8 @@ function App() {
     }
   }, [darkMode, showIntro]);
 
-  const handleIntroComplete = ({ skipSteps }) => {
+  // Fix #11: Remove unused skipSteps parameter
+  const handleIntroComplete = () => {
     setShowIntro(false);
     setStep(1);
     window.scrollTo(0, 0);

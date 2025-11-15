@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 
 export default function Brainstorm({ projectState, onNext, onBack }) {
+  // Fix #2: Prevent crash if brainstormIdeas is undefined
   const [brainstormIdeas, setBrainstormIdeas] = useState(
-    projectState.brainstormIdeas.join('\n') || ''
+    projectState.brainstormIdeas?.join('\n') || ''
   );
 
   const handleSubmit = (e) => {

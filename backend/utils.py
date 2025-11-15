@@ -175,6 +175,19 @@ def estimate_timeline_with_context(
     try:
         result = parse_json_response(response["data"])
 
+        # Fix #8: Validate that parse succeeded before accessing keys
+        if not result or not isinstance(result, dict):
+            logger.error("JSON parse returned empty or invalid result")
+            return {
+                "total_hours": 0,
+                "available_hours": 0,
+                "realistic": False,
+                "status": "unknown",
+                "message": "Could not estimate timeline",
+                "suggestion": None,
+                "explanation": "Unable to calculate at this time."
+            }
+
         # Add transparency explanation
         total = result.get("total_hours", 0)
         available = result.get("available_hours", 0)
