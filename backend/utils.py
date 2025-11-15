@@ -16,9 +16,12 @@ from config import (
     GENERIC_REFLECTION_INSIGHTS
 )
 from prompts import (
+    DETECT_PROJECT_TYPE_PROMPT,
     TASK_BREAKDOWN_PROMPT,
     TIME_ESTIMATION_PROMPT,
-    REFLECTION_INSIGHT_PROMPT
+    ADAPTIVE_REFLECTION_PROMPT,
+    REFLECTION_INSIGHT_PROMPT,
+    get_fallback_tasks
 )
 from safety import (
     validate_before_claude_call,
@@ -28,7 +31,6 @@ from safety import (
 
 logger = logging.getLogger(__name__)
 
-# Setup file logging for Claude failures (for debugging)
 def setup_error_logging():
     """Log Claude failures with timestamp to local file."""
     try:
@@ -42,109 +44,69 @@ def setup_error_logging():
 setup_error_logging()
 
 
-# ===== CLAUDE API CALLS =====
+# ===== LAYER 1: PROJECT TYPE DETECTION =====
 
-def call_claude_safely(prompt_template: str, **kwargs) -> dict:
+def detect_project_type(project_title: str, project_description: str) -> str:
     """
-    Call Claude with comprehensive safety checks before AND after.
-    This is the ONLY place Claude gets called. All safety happens here.
-    
-    Returns: {
-        "success": bool,
-        "data": str or None,
-        "user_message": str or None
-    }
+    Detect project type (hardware, software, creative, event, research, other).
+
+    Returns: project_type string
     """
-    
-    # PRE-CALL: Format prompt and check safety
+    response = call_claude_safely(
+        DETECT_PROJECT_TYPE_PROMPT,
+        project_title=project_title,
+        project_description=project_description
+    )
+
+    if not response["success"]:
+        logger.warning("Project type detection failed, defaulting to 'other'")
+        return "other"
+
     try:
-        input_text = prompt_template.format(**kwargs)
-    except KeyError as e:
-        logger.error(f"Prompt format error: {e}")
-        return {
-            "success": False,
-            "data": None,
-            "user_message": "Something went wrong. Please try again."
-        }
-    
-    pre_validation = validate_before_claude_call(input_text)
-    
-    if not pre_validation["safe"]:
-        logger.warning(f"Pre-validation failed: {pre_validation['reason']}")
-        return {
-            "success": False,
-            "data": None,
-            "user_message": "That request isn't something I can help with."
-        }
-    
-    # CLAUDE CALL
-    try:
-        if not CLAUDE_API_KEY:
-            raise ValueError("Claude API key not configured")
-        
-        client = Anthropic(api_key=CLAUDE_API_KEY)
-        message = client.messages.create(
-            model=CLAUDE_MODEL,
-            max_tokens=MAX_TOKENS,
-            messages=[{"role": "user", "content": input_text}]
-        )
-        response_text = message.content[0].text
-        logger.info("Claude API call successful")
-    
+        result = parse_json_response(response["data"])
+        project_type = result.get("type", "other")
+        logger.info(f"Detected project type: {project_type}")
+        return project_type
     except Exception as e:
-        error_response = handle_error_safely(e, "call_claude_safely")
-        logger.error(f"Claude API error: {error_response['internal_error']}")
-        return {
-            "success": False,
-            "data": None,
-            "user_message": error_response["user_message"]
-        }
-    
-    # POST-CALL: Validate response safety
-    response_validation = validate_claude_response(response_text)
-    
-    if not response_validation["safe"]:
-        logger.warning(f"Response validation failed: {response_validation['reason']}")
-        return {
-            "success": False,
-            "data": None,
-            "user_message": "Response validation failed. Using template instead."
-        }
-    
-    return {
-        "success": True,
-        "data": response_text,
-        "user_message": None
-    }
+        logger.error(f"Failed to parse project type: {e}")
+        return "other"
 
 
-def generate_tasks(project_goal: str, project_description: str) -> dict:
+# ===== LAYER 2: TASK GENERATION (Context-Aware) =====
+
+def generate_tasks_with_context(
+    project_title: str,
+    project_description: str,
+    project_type: str,
+    experience_level: str,
+    team_size: str
+) -> dict:
     """
-    Break down project into student-friendly tasks using Claude.
-    Falls back to template if Claude fails.
-    
+    Generate type-specific tasks scaled by experience level and team size.
+
     Returns: {
         "tasks": list of task dicts,
         "source": "claude" or "fallback",
         "message": str or None
     }
     """
-    
     response = call_claude_safely(
         TASK_BREAKDOWN_PROMPT,
-        project_title=project_goal,
-        project_description=project_description
+        project_title=project_title,
+        project_description=project_description,
+        project_type=project_type,
+        experience_level=experience_level,
+        team_size=team_size
     )
-    
+
     if not response["success"]:
-        logger.warning("Task generation failed, using fallback")
+        logger.warning(f"Task generation failed, using {project_type} fallback")
         return {
-            "tasks": FALLBACK_TASKS,
+            "tasks": get_fallback_tasks(project_type),
             "source": "fallback",
             "message": "Using template tasks. Edit them to match your project!"
         }
-    
-    # Parse Claude response
+
     try:
         tasks = parse_json_response(response["data"])
         if isinstance(tasks, list) and len(tasks) > 0:
@@ -155,56 +117,242 @@ def generate_tasks(project_goal: str, project_description: str) -> dict:
             }
     except Exception as e:
         logger.error(f"Failed to parse tasks: {e}")
-    
-    # If parsing failed, use fallback
+
     return {
-        "tasks": FALLBACK_TASKS,
+        "tasks": get_fallback_tasks(project_type),
         "source": "fallback",
         "message": "Using template tasks. You can edit them!"
     }
 
 
+# ===== LAYER 2B: TIME ESTIMATION (Context-Aware) =====
+
+def estimate_timeline_with_context(
+    tasks: list,
+    deadline_days: int,
+    experience_level: str,
+    team_size: str
+) -> dict:
+    """
+    Estimate if timeline is realistic based on experience and team size.
+
+    Returns: {
+        "total_hours": int,
+        "available_hours": int,
+        "realistic": bool,
+        "status": "good/tight/too_tight",
+        "message": str,
+        "suggestion": str or None
+    }
+    """
+    response = call_claude_safely(
+        TIME_ESTIMATION_PROMPT,
+        tasks_json=json.dumps(tasks),
+        deadline_days=deadline_days,
+        experience_level=experience_level,
+        team_size=team_size
+    )
+
+    if not response["success"]:
+        logger.warning("Timeline estimation failed")
+        return {
+            "total_hours": 0,
+            "available_hours": 0,
+            "realistic": False,
+            "status": "unknown",
+            "message": "Could not estimate timeline",
+            "suggestion": None
+        }
+
+    try:
+        result = parse_json_response(response["data"])
+        return result
+    except Exception as e:
+        logger.error(f"Failed to parse timeline: {e}")
+        return {
+            "total_hours": 0,
+            "available_hours": 0,
+            "realistic": False,
+            "status": "unknown",
+            "message": "Could not estimate timeline",
+            "suggestion": None
+        }
+
+
+# ===== LAYER 3: ADAPTIVE REFLECTION PROMPTS =====
+
+def generate_adaptive_reflection_prompts(
+    project_type: str,
+    project_title: str,
+    what_went_well: str,
+    what_was_hard: str,
+    what_learned: str
+) -> dict:
+    """
+    Generate 3 custom reflection prompts based on student's project.
+
+    Returns: {
+        "prompts": list of 3 custom prompts,
+        "source": "claude" or "generic"
+    }
+    """
+    response = call_claude_safely(
+        ADAPTIVE_REFLECTION_PROMPT,
+        project_type=project_type,
+        project_title=project_title,
+        what_went_well=what_went_well,
+        what_was_hard=what_was_hard,
+        what_learned=what_learned
+    )
+
+    if not response["success"]:
+        logger.warning("Adaptive prompts generation failed, using generic")
+        return {
+            "prompts": [
+                "What went well with your project?",
+                "What was challenging?",
+                "What did you learn?"
+            ],
+            "source": "generic"
+        }
+
+    try:
+        result = parse_json_response(response["data"])
+        if "prompts" in result and isinstance(result["prompts"], list):
+            return {
+                "prompts": result["prompts"],
+                "source": "claude"
+            }
+    except Exception as e:
+        logger.error(f"Failed to parse adaptive prompts: {e}")
+
+    return {
+        "prompts": [
+            "What went well with your project?",
+            "What was challenging?",
+            "What did you learn?"
+        ],
+        "source": "generic"
+    }
+
+
+# ===== CLAUDE CORE CALL =====
+
+def call_claude_safely(prompt_template: str, **kwargs) -> dict:
+    """
+    Call Claude with comprehensive safety checks before AND after.
+    This is the ONLY place Claude gets called.
+
+    Returns: {
+        "success": bool,
+        "data": str or None,
+        "user_message": str or None
+    }
+    """
+
+    # PRE-CALL: Format and validate
+    try:
+        input_text = prompt_template.format(**kwargs)
+    except KeyError as e:
+        logger.error(f"Prompt format error: {e}")
+        return {
+            "success": False,
+            "data": None,
+            "user_message": "Something went wrong. Please try again."
+        }
+
+    pre_validation = validate_before_claude_call(input_text)
+
+    if not pre_validation["safe"]:
+        logger.warning(f"Pre-validation failed: {pre_validation['reason']}")
+        return {
+            "success": False,
+            "data": None,
+            "user_message": "That request isn't something I can help with."
+        }
+
+    # CLAUDE CALL
+    try:
+        if not CLAUDE_API_KEY:
+            raise ValueError("Claude API key not configured")
+
+        client = Anthropic(api_key=CLAUDE_API_KEY)
+        message = client.messages.create(
+            model=CLAUDE_MODEL,
+            max_tokens=MAX_TOKENS,
+            messages=[{"role": "user", "content": input_text}]
+        )
+        response_text = message.content[0].text
+        logger.info("Claude API call successful")
+
+    except Exception as e:
+        error_response = handle_error_safely(e, "call_claude_safely")
+        logger.error(f"Claude API error: {error_response['internal_error']}")
+        return {
+            "success": False,
+            "data": None,
+            "user_message": error_response["user_message"]
+        }
+
+    # POST-CALL: Validate response
+    response_validation = validate_claude_response(response_text)
+
+    if not response_validation["safe"]:
+        logger.warning(f"Response validation failed: {response_validation['reason']}")
+        return {
+            "success": False,
+            "data": None,
+            "user_message": "Response validation failed. Using template instead."
+        }
+
+    return {
+        "success": True,
+        "data": response_text,
+        "user_message": None
+    }
+
+
+# ===== REFLECTION INSIGHTS (Updated for Layer 3) =====
+
 def generate_reflection_insights(reflection_data: dict) -> dict:
     """
-    Use Claude to generate personalized insights from student reflection.
-    Falls back to generic insights if Claude fails.
-    
+    Generate personalized insights from student reflection.
+
     Args:
-        reflection_data: Dict with went_well, was_hard, learned, project_title
-    
+        reflection_data: Dict with went_well, was_hard, learned, project_title, project_type
+
     Returns: {
         "insights": list of insight strings,
         "source": "claude" or "generic"
     }
     """
-    
-    # Validate input
+
     reflection_text = f"{reflection_data.get('went_well', '')} {reflection_data.get('was_hard', '')} {reflection_data.get('learned', '')}"
     pre_validation = validate_before_claude_call(reflection_text)
-    
+
     if not pre_validation["safe"]:
         logger.warning("Reflection input failed safety check")
         return {
             "insights": GENERIC_REFLECTION_INSIGHTS,
             "source": "generic"
         }
-    
+
     response = call_claude_safely(
         REFLECTION_INSIGHT_PROMPT,
         project_title=reflection_data.get('project_title', 'Project'),
+        project_type=reflection_data.get('project_type', 'other'),
         what_went_well=reflection_data.get('went_well', ''),
         what_was_hard=reflection_data.get('was_hard', ''),
         what_learned=reflection_data.get('learned', '')
     )
-    
+
     if not response["success"]:
         logger.warning("Reflection insights generation failed, using generic")
         return {
             "insights": GENERIC_REFLECTION_INSIGHTS,
             "source": "generic"
         }
-    
-    # Parse response
+
     try:
         insights_data = parse_json_response(response["data"])
         if "insights" in insights_data and isinstance(insights_data["insights"], list):
@@ -214,7 +362,7 @@ def generate_reflection_insights(reflection_data: dict) -> dict:
             }
     except Exception as e:
         logger.error(f"Failed to parse insights: {e}")
-    
+
     return {
         "insights": GENERIC_REFLECTION_INSIGHTS,
         "source": "generic"
@@ -224,17 +372,10 @@ def generate_reflection_insights(reflection_data: dict) -> dict:
 # ===== RESPONSE PARSING =====
 
 def parse_json_response(response_text: str) -> dict:
-    """
-    Safely parse JSON from Claude response.
-    Handles malformed JSON gracefully.
-    
-    Returns: Parsed dict or empty dict
-    """
+    """Safely parse JSON from Claude response."""
     try:
-        # Try direct parse first
         return json.loads(response_text)
     except json.JSONDecodeError:
-        # Try to extract JSON from markdown code blocks
         try:
             if "```json" in response_text:
                 json_str = response_text.split("```json")[1].split("```")[0].strip()
@@ -242,26 +383,17 @@ def parse_json_response(response_text: str) -> dict:
                 json_str = response_text.split("```")[1].split("```")[0].strip()
             else:
                 json_str = response_text
-            
+
             return json.loads(json_str)
         except (json.JSONDecodeError, IndexError) as e:
-            logger.error(f"Could not parse JSON from response: {e}")
+            logger.error(f"Could not parse JSON: {e}")
             return {}
 
 
 # ===== PDF EXPORT =====
 
 def export_project_to_pdf(project_data: dict) -> bytes:
-    """
-    Generate a PDF of the completed project.
-    Returns PDF as bytes (can be downloaded or emailed).
-    
-    Args:
-        project_data: Dict with title, description, tasks, team, reflection, badges, insights
-    
-    Returns:
-        PDF bytes
-    """
+    """Generate PDF of completed project."""
     try:
         from reportlab.lib.pagesizes import letter
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -269,8 +401,7 @@ def export_project_to_pdf(project_data: dict) -> bytes:
         from reportlab.lib.units import inch
         from reportlab.lib import colors
         from datetime import datetime
-        
-        # Create PDF in memory
+
         pdf_buffer = BytesIO()
         doc = SimpleDocTemplate(
             pdf_buffer,
@@ -282,17 +413,16 @@ def export_project_to_pdf(project_data: dict) -> bytes:
         )
         story = []
         styles = getSampleStyleSheet()
-        
-        # Custom styles
+
         title_style = ParagraphStyle(
             'CustomTitle',
             parent=styles['Heading1'],
             fontSize=24,
             textColor=colors.HexColor('#1e40af'),
             spaceAfter=12,
-            alignment=1  # Center
+            alignment=1
         )
-        
+
         heading_style = ParagraphStyle(
             'CustomHeading',
             parent=styles['Heading2'],
@@ -301,23 +431,20 @@ def export_project_to_pdf(project_data: dict) -> bytes:
             spaceAfter=10,
             spaceBefore=12
         )
-        
-        # ===== TITLE =====
+
         story.append(Paragraph(f"<b>{project_data.get('title', 'Project Plan')}</b>", title_style))
         story.append(Spacer(1, 0.2*inch))
-        
-        # ===== METADATA =====
+
         goal = project_data.get('goals', {}).get('goal', 'N/A') if isinstance(project_data.get('goals', {}), dict) else 'N/A'
         story.append(Paragraph(f"<b>Goal:</b> {goal}", styles['Normal']))
-        
+
         team = ", ".join(project_data.get('team_members', [])) or "Solo"
         story.append(Paragraph(f"<b>Team:</b> {team}", styles['Normal']))
         story.append(Paragraph(f"<b>Created:</b> {datetime.now().strftime('%B %d, %Y')}", styles['Normal']))
         story.append(Spacer(1, 0.3*inch))
-        
-        # ===== TASKS TABLE =====
+
         story.append(Paragraph("📋 Project Tasks", heading_style))
-        
+
         tasks_data = [['Task', 'Hours', 'Difficulty', 'Assigned To']]
         for task in project_data.get('tasks', []):
             tasks_data.append([
@@ -326,7 +453,7 @@ def export_project_to_pdf(project_data: dict) -> bytes:
                 task.get('difficulty', 'Medium'),
                 task.get('assigned_to', 'Unassigned')
             ])
-        
+
         tasks_table = Table(tasks_data, colWidths=[2.2*inch, 0.6*inch, 0.9*inch, 1.3*inch])
         tasks_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e40af')),
@@ -342,40 +469,36 @@ def export_project_to_pdf(project_data: dict) -> bytes:
         ]))
         story.append(tasks_table)
         story.append(Spacer(1, 0.3*inch))
-        
-        # ===== TIMELINE =====
+
         story.append(Paragraph("⏱️ Timeline", heading_style))
         timeline = project_data.get('timeline', {})
         if isinstance(timeline, dict):
             story.append(Paragraph(f"<b>Expected Duration:</b> {timeline.get('total_hours', '?')} hours", styles['Normal']))
             story.append(Paragraph(f"<b>Deadline:</b> {timeline.get('deadline', 'N/A')}", styles['Normal']))
         story.append(Spacer(1, 0.3*inch))
-        
-        # ===== REFLECTION =====
+
         story.append(Paragraph("🤔 What We Learned", heading_style))
         reflection = project_data.get('reflection', {})
         if isinstance(reflection, dict):
             story.append(Paragraph(f"<b>What Went Well:</b>", styles['Normal']))
             story.append(Paragraph(reflection.get('went_well', 'N/A'), styles['Normal']))
             story.append(Spacer(1, 0.15*inch))
-            
+
             story.append(Paragraph(f"<b>What Was Hard:</b>", styles['Normal']))
             story.append(Paragraph(reflection.get('was_hard', 'N/A'), styles['Normal']))
             story.append(Spacer(1, 0.15*inch))
-            
+
             story.append(Paragraph(f"<b>What I Learned:</b>", styles['Normal']))
             story.append(Paragraph(reflection.get('learned', 'N/A'), styles['Normal']))
         story.append(Spacer(1, 0.3*inch))
-        
-        # ===== INSIGHTS =====
+
         insights = project_data.get('insights', [])
         if insights and isinstance(insights, list):
             story.append(Paragraph("💡 Key Insights", heading_style))
             for insight in insights:
                 story.append(Paragraph(f"• {insight}", styles['Normal']))
             story.append(Spacer(1, 0.2*inch))
-        
-        # ===== BADGES =====
+
         badges = project_data.get('badges', [])
         if badges and isinstance(badges, list):
             story.append(Paragraph("🏆 Badges Earned", heading_style))
@@ -385,17 +508,11 @@ def export_project_to_pdf(project_data: dict) -> bytes:
                         f"<b>{badge.get('name', 'Badge')}:</b> {badge.get('reason', '')}",
                         styles['Normal']
                     ))
-        
-        # ===== BUILD PDF =====
+
         doc.build(story)
         pdf_buffer.seek(0)
         return pdf_buffer.getvalue()
-    
+
     except Exception as e:
         logger.error(f"PDF generation failed: {e}")
         raise ValueError("Could not generate PDF")
-
-
-def get_fallback_tasks() -> list:
-    """Return fallback tasks if Claude fails."""
-    return FALLBACK_TASKS

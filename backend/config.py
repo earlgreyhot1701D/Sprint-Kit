@@ -36,7 +36,7 @@ ALLOWED_PROJECT_TYPES = [
 DISALLOWED_KEYWORDS = [
     # Academic dishonesty
     "homework",
-    "essay",
+    "shortcut",
     "test answers",
     "answers",
     "cheating",

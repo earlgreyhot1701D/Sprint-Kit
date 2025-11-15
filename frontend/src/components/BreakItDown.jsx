@@ -18,8 +18,11 @@ export default function BreakItDown({ projectState, onNext, onBack, onUpdate }) 
     setError(null);
 
     const result = await api.breakDownTasks(
-      projectState.goals.goal,
-      projectState.description
+      projectState.title,
+      projectState.description,
+      projectState.project_type || 'other',
+      projectState.experience_level || 'beginner',
+      projectState.team_size || '1'
     );
 
     if (result.success && result.data.tasks) {
