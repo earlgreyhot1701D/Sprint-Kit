@@ -8,6 +8,7 @@ export default function ProjectCreate({ projectState, onNext }) {
   const [newMember, setNewMember] = useState('');
   const [teamSize, setTeamSize] = useState(projectState.team_size || '1');
   const [experienceLevel, setExperienceLevel] = useState(projectState.experience_level || 'beginner');
+  const [projectType, setProjectType] = useState(projectState.project_type || 'other');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -53,27 +54,34 @@ export default function ProjectCreate({ projectState, onNext }) {
     }
 
     // Validate with backend
-    const validation = await api.validateProject(title, description);
+    try {
+      const validation = await api.validateProject(title, description);
 
-    if (!validation.success || !validation.data.valid) {
-      setErrors({ general: validation.data.error || 'Hmm, that project description is too vague. Tell us more!' });
+      if (!validation.success || !validation.data.valid) {
+        setErrors({ general: validation.data.error || 'Hmm, that project description is too vague. Tell us more!' });
+        setLoading(false);
+        return;
+      }
+
+      if (validation.data.warning) {
+        console.warn('Warning:', validation.data.warning);
+      }
+
+      setLoading(false);
+
+      onNext({
+        title,
+        description,
+        teamMembers: teamMembers.length > 0 ? teamMembers : ['You'],
+        team_size: teamSize,
+        experience_level: experienceLevel,
+        project_type: projectType
+      });
+    } catch (error) {
+      setErrors({ general: 'Network error. Please try again.' });
       setLoading(false);
       return;
     }
-
-    if (validation.data.warning) {
-      console.warn('Warning:', validation.data.warning);
-    }
-
-    onNext({
-      title,
-      description,
-      teamMembers: teamMembers.length > 0 ? teamMembers : ['You'],
-      team_size: teamSize,
-      experience_level: experienceLevel
-    });
-
-    setLoading(false);
   };
 
   return (
@@ -119,6 +127,25 @@ export default function ProjectCreate({ projectState, onNext }) {
           {errors.description && (
             <span className="error-text">{errors.description}</span>
           )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="projectType">What type of project is this?</label>
+          <select
+            id="projectType"
+            value={projectType}
+            onChange={(e) => setProjectType(e.target.value)}
+            className="form-select"
+          >
+            <option value="web_app">Web Application</option>
+            <option value="mobile_app">Mobile App</option>
+            <option value="game">Game</option>
+            <option value="hardware">Hardware/Robotics</option>
+            <option value="creative">Creative (Art/Music/Video)</option>
+            <option value="research">Research/Study</option>
+            <option value="event">Event/Campaign</option>
+            <option value="other">Other</option>
+          </select>
         </div>
 
         <div className="form-group">

@@ -15,7 +15,6 @@ function App() {
   const [step, setStep] = useState(1);
   const [darkMode, setDarkMode] = useState(false);
   const [projectState, setProjectState] = useState({
-    step: 1,
     title: '',
     description: '',
     team_size: '1',
@@ -55,11 +54,6 @@ function App() {
     } else {
       document.body.classList.remove('intro-active');
     }
-
-    return () => {
-      document.body.classList.remove('dark-mode');
-      document.body.classList.remove('intro-active');
-    };
   }, [darkMode, showIntro]);
 
   const handleIntroComplete = ({ skipSteps }) => {
@@ -91,7 +85,6 @@ function App() {
     setShowIntro(true);
     setStep(1);
     setProjectState({
-      step: 1,
       title: '',
       description: '',
       team_size: '1',
