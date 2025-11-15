@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
 import { api } from '../utils/api';
 
+// Helper to format date from YYYY-MM-DD to MM-DD-YYYY
+const formatDate = (isoDate) => {
+  if (!isoDate) return 'N/A';
+  try {
+    const [year, month, day] = isoDate.split('-');
+    return `${month}-${day}-${year}`;
+  } catch (e) {
+    return isoDate;
+  }
+};
+
 export default function Export({ projectState, onBack, onStartOver }) {
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -46,7 +57,7 @@ ${projectState.tasks?.map((t) => `  • ${t.name} (${t.hours}h, ${t.difficulty})
 
 ⏱️ TIMELINE:
    Total Work: ${projectState.timeline?.total_hours} hours
-   Deadline: ${projectState.timeline?.deadline}
+   Deadline: ${formatDate(projectState.timeline?.deadline)}
 
 ───────────────────────────────────────────────────────────────────────────
 
@@ -113,7 +124,7 @@ ${projectState.insights?.length > 0 ? `💡 KEY INSIGHTS:\n${projectState.insigh
           <h4>Timeline</h4>
           <p>
             Total: {projectState.timeline?.total_hours} hours | Deadline:{' '}
-            {projectState.timeline?.deadline}
+            {formatDate(projectState.timeline?.deadline)}
           </p>
         </div>
 

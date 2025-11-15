@@ -184,7 +184,10 @@ Keep messages simple and encouraging. Use phrases like:
 # ============================================================================
 
 ADAPTIVE_REFLECTION_PROMPT = """
-Generate reflection prompts customized to a student's actual project.
+Generate reflection prompts customized to a student's PROJECT PLANNING process.
+
+IMPORTANT: These students are reflecting on how they PLANNED their project, NOT how they executed it.
+They have NOT started the actual work yet - they only completed the planning phase.
 
 Project Type: {project_type}
 Project Title: {project_title}
@@ -192,27 +195,31 @@ What They Said Went Well: {what_went_well}
 What They Said Was Hard: {what_was_hard}
 What They Learned: {what_learned}
 
-Generate 3 specific, customized reflection prompts based on their project.
+Generate 3 specific, customized reflection prompts about their PLANNING PROCESS.
 Each prompt should:
+- Ask about PLANNING, not execution (use future tense: "How will you...?" or "How did you decide to...?")
 - Reference something specific they mentioned OR reference the project type
-- Ask about HOW they solved/did something or WHY something was hard, not just WHAT happened
+- Ask about HOW they planned or WHY they made planning decisions, not about doing the project
 - Be appropriate for grades 6-8 (simple, concrete language)
-- Focus on thinking/learning/problem-solving, not just effort/feelings
-- Match their project type (e.g., for hardware: "How did you troubleshoot when...?", for paper: "What sources helped you..?")
+- Focus on planning skills: decomposition, time estimation, resource planning, team coordination
+- Match their project type (hardware: materials planning, research: source planning, etc.)
 
-Examples by type:
-- Hardware: "You said the motor kept breaking. How did you figure out what was wrong?"
-- Software: "You mentioned debugging was hard. Walk me through what you tried to fix it."
-- Creative: "Tell me about a moment where your design didn't work—how did you fix it?"
-- Event: "You worked with teammates. Give me one example of how you coordinated together."
-- Research: "You found multiple sources. How did you decide which information was most important?"
+Examples by type (PLANNING FOCUS):
+- Hardware: "How did you decide which materials you'll need for your project?"
+- Software: "What made you break down the coding into those specific tasks?"
+- Creative: "How will you organize your time to finish the design before the deadline?"
+- Event: "How did you plan to coordinate tasks among your team members?"
+- Research: "What's your strategy for finding trustworthy sources about {project_title}?"
+
+BAD (execution-focused): "How did you fix the bug?" or "What sources did you use?"
+GOOD (planning-focused): "How did you decide which features to build first?" or "How will you evaluate which sources to trust?"
 
 Respond ONLY with JSON:
 {{
   "prompts": [
-    "Prompt 1 here (specific to their project and what they shared)",
-    "Prompt 2 here (specific to their project and what they shared)",
-    "Prompt 3 here (specific to their project and what they shared)"
+    "Prompt 1 here (specific to their planning process)",
+    "Prompt 2 here (specific to their planning process)",
+    "Prompt 3 here (specific to their planning process)"
   ]
 }}
 
