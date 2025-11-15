@@ -1,6 +1,7 @@
 /**
  * API client for Sprint Kit
  * Handles all backend communication with 3-layer personalization
+ * UPDATED: generateReflectionInsights now supports NEW reflection format (prompts + answers)
  */
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -176,7 +177,7 @@ export const api = {
     }
   },
 
-  // Reflection insights
+  // Reflection insights - UPDATED to support NEW format (prompts + answers)
   generateReflectionInsights: async (projectTitle, projectType, reflection) => {
     try {
       const response = await fetch(`${API_BASE}/api/projects/reflection-insights`, {
