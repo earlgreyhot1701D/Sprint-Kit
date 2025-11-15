@@ -11,6 +11,7 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
   );
   const [loadingPrompts, setLoadingPrompts] = useState(false);
   const [promptsError, setPromptsError] = useState(null);
+  const [generatingInsights, setGeneratingInsights] = useState(false);
 
   // Fetch adaptive reflection prompts on mount
   useEffect(() => {
@@ -23,22 +24,19 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
     setLoadingPrompts(true);
     setPromptsError(null);
 
-    // Call with correct parameters: projectType, projectTitle, whatWentWell, whatWasHard, whatLearned
     const result = await api.getReflectionPrompts(
       projectState.project_type || 'other',
       projectState.title || 'Project',
-      '', // what_went_well (student hasn't answered yet)
-      '', // what_was_hard (student hasn't answered yet)
-      ''  // what_learned (student hasn't answered yet)
+      '',
+      '',
+      ''
     );
 
     if (result.success && result.data.prompts && result.data.prompts.length > 0) {
       setReflectionPrompts(result.data.prompts);
-      // Initialize empty answers for each prompt
       setReflectionAnswers(new Array(result.data.prompts.length).fill(''));
     } else {
       setPromptsError('Could not load custom prompts. Using defaults.');
-      // Fallback to generic prompts
       setReflectionPrompts([
         'What went well with your project?',
         'What was hard or challenging?',
@@ -56,7 +54,7 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
     setReflectionAnswers(newAnswers);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validate: all answers have minimum length
@@ -70,19 +68,39 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
       return;
     }
 
-    // Store both new format (prompts + answers) and old format for backward compatibility
+    // Show loading state while generating insights
+    setGeneratingInsights(true);
+
+    // Generate insights based on their answers
+    const insightsResult = await api.generateReflectionInsights(
+      projectState.title,
+      projectState.project_type || 'other',
+      {
+        prompts: reflectionPrompts,
+        answers: reflectionAnswers
+      }
+    );
+
+    setGeneratingInsights(false);
+
+    // Store reflection + insights
     const oldFormatReflection = {
       went_well: reflectionAnswers[0] || '',
       was_hard: reflectionAnswers[1] || '',
       learned: reflectionAnswers[2] || ''
     };
 
+    const insights = insightsResult.success && insightsResult.data.insights
+      ? insightsResult.data.insights
+      : [];
+
     onUpdate({
       reflection: {
-        prompts: reflectionPrompts,        // NEW
-        answers: reflectionAnswers,        // NEW
-        ...oldFormatReflection             // OLD (for compatibility)
-      }
+        prompts: reflectionPrompts,
+        answers: reflectionAnswers,
+        ...oldFormatReflection
+      },
+      insights
     });
 
     onNext();
@@ -138,9 +156,9 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
                   maxLength={limits.max}
                   required
                   className="reflection-textarea"
+                  disabled={generatingInsights}
                 />
 
-                {/* Character counter with soft prompt */}
                 <div className="char-counter">
                   {showSoftPrompt(reflectionAnswers[idx]?.length || 0, limits.soft) && (
                     <small className="soft-prompt">
@@ -165,11 +183,11 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
           </div>
 
           <div className="form-actions">
-            <button type="button" onClick={onBack} className="btn-secondary">
+            <button type="button" onClick={onBack} className="btn-secondary" disabled={generatingInsights}>
               ← Back
             </button>
-            <button type="submit" className="btn-primary">
-              See my project →
+            <button type="submit" className="btn-primary" disabled={generatingInsights}>
+              {generatingInsights ? 'Generating insights...' : 'See my project →'}
             </button>
           </div>
         </form>
