@@ -28,13 +28,42 @@ Unlike generic project tools adapted for kids, Sprint Kit is grounded in **Gold 
 6. **Reflection** ⭐ - AI generates personalized insights; students earn badges for real learning
 7. **Export** - PDF or text summary for sharing/portfolios
 
-**Key Innovation: Authentic Gamification**
+**Key Innovation 1: 3-Layer AI Personalization**
+
+Sprint Kit doesn't use generic templates. It detects project type and personalizes guidance:
+
+**Example: "Research the Constitution" (Research project, beginner, 2 students)**
+- **Layer 1**: AI detects this is a *research* project (not hardware or creative)
+- **Layer 2**: AI generates research-specific tasks:
+  - "Find 3-5 trustworthy sources (books, academic sites, primary documents)"
+  - "Read and take notes on key findings"
+  - "Write your report with proper citations"
+- **Layer 3**: AI generates custom reflection prompts:
+  - "What's your strategy for finding trustworthy sources about the Constitution?"
+  - "How did you organize your research notes to make writing easier?"
+
+**vs. "Build a robot" (Hardware project, advanced, 4 students)**
+- **Layer 1**: AI detects this is a *hardware* project
+- **Layer 2**: AI generates hardware-specific tasks:
+  - "Gather materials: motors, chassis, sensors, power supply"
+  - "Design the robot structure (sketch or CAD)"
+  - "Build and assemble main components"
+  - "Test and troubleshoot each subsystem"
+- **Layer 3**: AI generates custom reflection prompts:
+  - "How did you decide which materials you'll need for your robot?"
+  - "What's your plan for testing if each part works before assembly?"
+
+**Why this matters**: Students get methodology-appropriate guidance, not generic "Step 1: Plan, Step 2: Do, Step 3: Finish."
+
+---
+
+**Key Innovation 2: Authentic Gamification**
 
 Rather than points and streaks, Sprint Kit awards three research-backed badges tied to actual skill demonstration:
 
-- 🧩 **"I Can Break It Down"** - Awarded when decomposition is evident
+- 🧩 **"I Can Break It Down"** - Awarded when decomposition is evident in reflection
 - ⏰ **"Planner Power"** - Awarded when timeline estimates are accurate (±20%)
-- 👥 **"Team Player"** - Awarded when collaboration is demonstrated
+- 👥 **"Team Player"** - Awarded when collaboration is demonstrated in reflection
 
 Research shows middle schoolers detect manipulation. Authentic badges celebrating real learning work. Generic point systems don't.
 
@@ -119,9 +148,13 @@ Sprint Kit uses authentic gamification (real badges for real learning) to make p
 - Measurable learning outcomes (badges require skill demonstration)
 
 ### Creativity & Innovation ⭐⭐⭐
-- AI scaffolding for decomposition (unique approach)
-- Authentic badges vs. pointification (research-backed design choice)
-- Grade-appropriate, age-appropriate language throughout
+- **3-layer AI personalization** (not generic templates):
+  - Hardware project: "Gather materials and tools" + safety considerations
+  - Research project: "Find trustworthy sources" + citation strategies
+  - Creative project: "Plan your design" + feedback iteration
+- **Authentic badges** vs. pointification (research-backed design choice)
+- **Adaptive reflection prompts**: Custom questions based on what student actually built
+- **Grade-appropriate language** throughout (6-8 reading level)
 
 ### Technical Craft & Execution ⭐⭐⭐
 - Modular, testable code (pytest with 15+ tests)
