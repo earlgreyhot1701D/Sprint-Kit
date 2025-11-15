@@ -16,17 +16,6 @@ export default function Export({ projectState, onBack, onStartOver }) {
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // 🔍 DIAGNOSTIC: Log full reflection object at component render
-  console.log('=== EXPORT.JSX DIAGNOSTIC ===');
-  console.log('Full projectState:', projectState);
-  console.log('Reflection object:', projectState.reflection);
-  console.log('Reflection prompts:', projectState.reflection?.prompts);
-  console.log('Reflection answers:', projectState.reflection?.answers);
-  console.log('Prompts length:', projectState.reflection?.prompts?.length);
-  console.log('Answers length:', projectState.reflection?.answers?.length);
-  console.log('Answers array:', JSON.stringify(projectState.reflection?.answers));
-  console.log('=========================');
-
   const handleDownloadPDF = async () => {
     setDownloading(true);
     try {
@@ -40,12 +29,13 @@ export default function Export({ projectState, onBack, onStartOver }) {
 
   const handleCopyToClipboard = () => {
     let reflectionText = '';
-    if (projectState.reflection?.prompts?.length > 0) {
-      // Fix #7: Safely access answers array with bounds checking
+    if (projectState.reflection?.prompts?.length > 0 && projectState.reflection?.answers?.length > 0) {
+      // New format: Q&A pairs
       reflectionText = projectState.reflection.prompts
-        .map((prompt, idx) => `Q: ${prompt}\nA: ${projectState.reflection.answers?.[idx] || '❌ NO ANSWER FOUND'}`)
+        .map((prompt, idx) => `Q: ${prompt}\nA: ${projectState.reflection.answers[idx] || 'No answer provided'}`)
         .join('\n\n');
     } else {
+      // Fallback to old format
       reflectionText = `Went Well:\n${projectState.reflection?.went_well}\n\nWas Hard:\n${projectState.reflection?.was_hard}\n\nWould Do Differently:\n${projectState.reflection?.differently}`;
     }
 
@@ -139,25 +129,16 @@ ${projectState.insights?.length > 0 ? `💡 KEY INSIGHTS:\n${projectState.insigh
           </p>
         </div>
 
-        {projectState.reflection?.prompts?.length > 0 ? (
+        {projectState.reflection?.prompts?.length > 0 && projectState.reflection?.answers?.length > 0 ? (
           <div className="summary-section">
             <h4>Your Reflection</h4>
             <div className="qa-pairs">
-              {projectState.reflection.prompts.map((prompt, idx) => {
-                // 🔍 DIAGNOSTIC: Log each prompt/answer pair
-                console.log(`Rendering Q&A #${idx}:`);
-                console.log(`  Prompt: "${prompt}"`);
-                console.log(`  Answer: "${projectState.reflection.answers?.[idx]}"`);
-                console.log(`  Answer exists: ${!!projectState.reflection.answers?.[idx]}`);
-
-                return (
-                  <div key={idx} className="qa-pair">
-                    <p><strong>Q: {prompt}</strong></p>
-                    {/* Fix #7: Safely access answers array with bounds checking */}
-                    <p className="answer">A: {projectState.reflection.answers?.[idx] || '❌ NO ANSWER FOUND'}</p>
-                  </div>
-                );
-              })}
+              {projectState.reflection.prompts.map((prompt, idx) => (
+                <div key={idx} className="qa-pair">
+                  <p><strong>Q: {prompt}</strong></p>
+                  <p className="answer">A: {projectState.reflection.answers[idx] || 'No answer provided'}</p>
+                </div>
+              ))}
             </div>
           </div>
         ) : (
