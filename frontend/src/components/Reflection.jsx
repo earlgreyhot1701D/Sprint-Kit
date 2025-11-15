@@ -20,6 +20,21 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
     }
   }, []);
 
+  // Sync answers to parent state whenever they change
+  useEffect(() => {
+    if (reflectionPrompts.length > 0 && reflectionAnswers.length > 0) {
+      onUpdate({
+        reflection: {
+          prompts: reflectionPrompts,
+          answers: reflectionAnswers,
+          went_well: reflectionAnswers[0] || '',
+          was_hard: reflectionAnswers[1] || '',
+          learned: reflectionAnswers[2] || ''
+        }
+      });
+    }
+  }, [reflectionAnswers]);
+
   const fetchAdaptivePrompts = async () => {
     setLoadingPrompts(true);
     setPromptsError(null);
@@ -33,8 +48,22 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
     );
 
     if (result.success && result.data.prompts && result.data.prompts.length > 0) {
-      setReflectionPrompts(result.data.prompts);
-      setReflectionAnswers(new Array(result.data.prompts.length).fill(''));
+      const newPrompts = result.data.prompts;
+      setReflectionPrompts(newPrompts);
+      // Initialize answers array to match prompts length
+      const initialAnswers = new Array(newPrompts.length).fill('');
+      setReflectionAnswers(initialAnswers);
+
+      // Immediately sync to parent state
+      onUpdate({
+        reflection: {
+          prompts: newPrompts,
+          answers: initialAnswers,
+          went_well: '',
+          was_hard: '',
+          learned: ''
+        }
+      });
     } else {
       setPromptsError('Could not load custom prompts. Using defaults.');
       const defaultPrompts = [
@@ -42,9 +71,20 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
         'What was challenging about the planning process?',
         'What did you learn about yourself as a planner?'
       ];
-      // Fix #6: Dynamically create answers array based on prompts length
       setReflectionPrompts(defaultPrompts);
-      setReflectionAnswers(new Array(defaultPrompts.length).fill(''));
+      const initialAnswers = new Array(defaultPrompts.length).fill('');
+      setReflectionAnswers(initialAnswers);
+
+      // Sync defaults to parent state
+      onUpdate({
+        reflection: {
+          prompts: defaultPrompts,
+          answers: initialAnswers,
+          went_well: '',
+          was_hard: '',
+          learned: ''
+        }
+      });
     }
 
     setLoadingPrompts(false);
@@ -85,27 +125,27 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
 
     setGeneratingInsights(false);
 
-    // Store reflection + insights
-    const oldFormatReflection = {
-      went_well: reflectionAnswers[0] || '',
-      was_hard: reflectionAnswers[1] || '',
-      learned: reflectionAnswers[2] || ''
-    };
-
+    // Extract insights
     const insights = insightsResult.success && insightsResult.data.insights
       ? insightsResult.data.insights
       : [];
 
+    // Update state with insights (reflection already synced via useEffect)
     onUpdate({
       reflection: {
         prompts: reflectionPrompts,
         answers: reflectionAnswers,
-        ...oldFormatReflection
+        went_well: reflectionAnswers[0] || '',
+        was_hard: reflectionAnswers[1] || '',
+        learned: reflectionAnswers[2] || ''
       },
       insights
     });
 
-    onNext();
+    // Small delay to ensure state update completes before navigation
+    setTimeout(() => {
+      onNext();
+    }, 50);
   };
 
   const limits = FORM_LIMITS.reflection;
