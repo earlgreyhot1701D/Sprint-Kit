@@ -1,4 +1,4 @@
-/* App.css - REFACRORED FOR THEME TOGGLE, DARK/LIGHT MODES, AND WHITE INTRO */
+/* App.css - COMPLETE WITH BASE STYLES + POLISH ADDITIONS (Items 8 & 9) */
 
 * {
   margin: 0;
@@ -6,9 +6,9 @@
   box-sizing: border-box;
 }
 
-/* ------------------------------------------------------------------- */
+/* ================================================================== */
 /* 1. LIGHT MODE VARIABLES (Default/Primary Theme) */
-/* ------------------------------------------------------------------- */
+/* ================================================================== */
 :root {
   --primary: #4f46e5;       /* Indigo */
   --primary-dark: #3730a3;  /* Deeper Indigo */
@@ -33,9 +33,9 @@
   --shadow-lg: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* ------------------------------------------------------------------- */
+/* ================================================================== */
 /* 2. DARK MODE VARIABLES (Applied via .dark-mode class on body) */
-/* ------------------------------------------------------------------- */
+/* ================================================================== */
 body.dark-mode {
   --primary: #6366f1;       /* Vibrant Indigo */
   --primary-dark: #4f46e5;  /* Deeper Indigo */
@@ -56,10 +56,9 @@ body.dark-mode {
   --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.7);
 }
 
-
-/* ------------------------------------------------------------------- */
+/* ================================================================== */
 /* 3. BASE STYLES (Use variables) */
-/* ------------------------------------------------------------------- */
+/* ================================================================== */
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
     Cantarell, sans-serif;
@@ -197,19 +196,42 @@ body.intro-active {
   color: var(--text-light);
 }
 
-.form-group label {
+.hint-box {
+  background: rgba(16, 185, 129, 0.1);
+  padding: 1rem;
+  border-left: 4px solid var(--accent);
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
   color: var(--text);
+}
+
+.hint-box p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text);
+  font-weight: 600;
 }
 
 .form-group input,
 .form-group textarea,
 .form-group select {
+  width: 100%;
   background: var(--card-surface);
   color: var(--text);
   border: 1px solid var(--border);
   padding: 0.75rem;
   border-radius: 6px;
   font-size: 1rem;
+  font-family: inherit;
   transition: background 0.3s, color 0.3s, border-color 0.3s;
 }
 
@@ -217,8 +239,32 @@ body.intro-active {
 .form-group textarea:focus,
 .form-group select:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3); /* Accent Glow */
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
   outline: none;
+}
+
+.form-group input.input-error,
+.form-group textarea.input-error {
+  border-color: var(--danger);
+}
+
+.char-count {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-top: 0.25rem;
+}
+
+.error-text {
+  color: var(--danger);
+  font-size: 0.85rem;
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
 }
 
 /* Buttons */
@@ -240,6 +286,11 @@ body.intro-active {
   box-shadow: 0 6px 15px rgba(99, 102, 241, 0.5);
 }
 
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .btn-secondary {
     background: var(--bg-mid);
     color: var(--text-light);
@@ -247,6 +298,7 @@ body.intro-active {
     padding: 0.85rem 1.8rem;
     border-radius: 8px;
     font-weight: 600;
+    font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -254,21 +306,282 @@ body.intro-active {
 .btn-secondary:hover {
     background: var(--card-surface);
     color: var(--text);
+    border-color: var(--primary);
 }
 
-/* Footer */
-.footer {
-  background: var(--bg-light);
-  color: var(--text-light);
-  padding: 1rem;
-  text-align: center;
+.btn-remove-task {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
   font-size: 0.9rem;
-  margin-top: auto;
-  border-top: 1px solid var(--border);
-  transition: background 0.3s, color 0.3s, border-color 0.3s;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-/* Animations */
+.btn-remove-task:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: var(--danger);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  justify-content: space-between;
+}
+
+.button-group {
+  margin-top: 1.5rem;
+}
+
+/* Warning/Error Messages */
+.warning-message {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-left: 4px solid var(--warning);
+  padding: 1rem;
+  border-radius: 6px;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+}
+
+.warning-message p {
+  margin: 0;
+}
+
+/* ================================================================== */
+/* ITEM #8: LOADING SPINNER & SKELETON STATE (BreakItDown) */
+/* ================================================================== */
+
+.loading-state {
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.spinner {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.spinner-circle {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-text {
+  font-size: 1.1rem;
+  color: var(--text-light);
+  margin-bottom: 2rem;
+  font-weight: 500;
+}
+
+/* Skeleton Placeholder */
+.skeleton-tasks {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.skeleton-task {
+  background: var(--bg-light);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-line {
+  height: 12px;
+  background: var(--bg-mid);
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.skeleton-title {
+  width: 60%;
+  height: 16px;
+  margin-bottom: 0.75rem;
+}
+
+.skeleton-text {
+  width: 100%;
+  height: 12px;
+}
+
+.skeleton-text.short {
+  width: 40%;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ================================================================== */
+/* ITEM #9: POLISHED INSIGHTS (Reflection) */
+/* ================================================================== */
+
+.insights-section {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.insights-section h3 {
+  font-size: 1.4rem;
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.insight-card {
+  background: var(--bg-light);
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  animation: slideUp 0.5s ease-out;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+  transition: all 0.3s ease;
+}
+
+.insight-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+  border-color: var(--primary);
+}
+
+.insight-emoji {
+  font-size: 2rem;
+  min-width: 2.5rem;
+  text-align: center;
+}
+
+.insight-text {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text);
+  margin: 0;
+  font-weight: 500;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================================================================== */
+/* POLISHED BADGES (Enhanced) */
+/* ================================================================== */
+
+.badges-section {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(234, 179, 8, 0.08) 100%);
+  border-radius: 12px;
+  border: 2px solid rgba(245, 158, 11, 0.3);
+}
+
+.badges-section h3 {
+  font-size: 1.4rem;
+  color: #d97706;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+
+.badges-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.badge-card {
+  background: var(--bg-light);
+  border: 2px solid #fbbf24;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  box-shadow: 0 6px 16px rgba(251, 191, 36, 0.2);
+  transition: all 0.3s ease;
+}
+
+.badge-card:hover {
+  transform: scale(1.05) rotateY(5deg);
+  box-shadow: 0 12px 24px rgba(251, 191, 36, 0.35);
+}
+
+.badge-icon {
+  font-size: 2.5rem;
+  min-width: 3rem;
+  text-align: center;
+  animation: bounce 1s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.badge-info {
+  flex: 1;
+}
+
+.badge-info strong {
+  display: block;
+  font-size: 1.1rem;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.badge-info p {
+  font-size: 0.95rem;
+  color: var(--text-light);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ================================================================== */
+/* ANIMATIONS */
+/* ================================================================== */
+
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -280,10 +593,77 @@ body.intro-active {
   }
 }
 
-/* Media Queries */
+/* ================================================================== */
+/* MEDIA QUERIES */
+/* ================================================================== */
+
+@media (max-width: 768px) {
+  .insights-grid,
+  .badges-list {
+    grid-template-columns: 1fr;
+  }
+
+  .insights-section,
+  .badges-section {
+    padding: 1.5rem;
+  }
+
+  .insights-section h3,
+  .badges-section h3 {
+    font-size: 1.2rem;
+  }
+
+  .insight-card,
+  .badge-card {
+    padding: 1.25rem;
+  }
+
+  .insight-emoji,
+  .badge-icon {
+    font-size: 1.5rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 640px) {
-  .header h1 { font-size: 2rem; }
-  .main-content { margin: 1.5rem auto; padding: 0 1rem; }
-  .step-container { padding: 1.5rem; border-radius: 12px; }
-  .theme-toggle-btn { top: 0.5rem; right: 0.5rem; padding: 0.4rem 0.8rem; font-size: 0.8rem;}
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .main-content {
+    margin: 1.5rem auto;
+    padding: 0 1rem;
+  }
+
+  .step-container {
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+
+  .theme-toggle-btn {
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+
+  .loading-state {
+    padding: 2rem 1rem;
+  }
+
+  .skeleton-title {
+    width: 80%;
+  }
 }

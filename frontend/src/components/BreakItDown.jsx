@@ -79,15 +79,28 @@ export default function BreakItDown({ projectState, onNext, onBack, onUpdate }) 
 
       <div className="hint-box">
         <p>
-          💡 AI is helping you think about smaller tasks. These are steps your team can
+          💡 Claude is helping you think about smaller tasks. These are steps your team can
           actually do.
         </p>
       </div>
 
       {loading && (
-        <div className="loading">
-          <p>⏳ Generating tasks...</p>
-          <div className="spinner"></div>
+        <div className="loading-state">
+          <div className="spinner">
+            <div className="spinner-circle"></div>
+          </div>
+          <p className="loading-text">⏳ Claude is breaking down your project into tasks...</p>
+
+          {/* Skeleton placeholder */}
+          <div className="skeleton-tasks">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="skeleton-task">
+                <div className="skeleton-line skeleton-title"></div>
+                <div className="skeleton-line skeleton-text"></div>
+                <div className="skeleton-line skeleton-text short"></div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

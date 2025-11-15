@@ -31,9 +31,9 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
       setInsights(result.data.insights);
     } else {
       setInsights([
-        'You thought about how you planned. That\'s metacognition!',
-        'You worked through challenges and kept going. That\'s persistence.',
-        'You reflected on your process, not just the result. That\'s how real learners think!'
+        'You thought about how you planned. That is metacognition!',
+        'You worked through challenges and kept going. That is persistence.',
+        'You reflected on your process, not just the result. That is how real learners think!'
       ]);
     }
 
@@ -177,11 +177,14 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
           {insights.length > 0 && (
             <div className="insights-section">
               <h3>💡 Your Learning Insights</h3>
-              {insights.map((insight, idx) => (
-                <p key={idx} className="insight">
-                  {insight}
-                </p>
-              ))}
+              <div className="insights-grid">
+                {insights.map((insight, idx) => (
+                  <div key={idx} className="insight-card">
+                    <div className="insight-emoji">💭</div>
+                    <p className="insight-text">{insight}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

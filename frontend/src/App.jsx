@@ -194,7 +194,7 @@ function App() {
 
         {/* Theme Toggle Button */}
         <button onClick={toggleTheme} className="theme-toggle-btn" title="Toggle Light/Dark Mode">
-          {darkMode ? '☀️ Light Mode' : '🌑 Dark Mode'}
+          {darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
         </button>
 
         {/* Step indicator dots */}
