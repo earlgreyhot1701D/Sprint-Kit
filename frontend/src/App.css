@@ -1,7 +1,289 @@
+/* App.css - REFACRORED FOR THEME TOGGLE, DARK/LIGHT MODES, AND WHITE INTRO */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ------------------------------------------------------------------- */
+/* 1. LIGHT MODE VARIABLES (Default/Primary Theme) */
+/* ------------------------------------------------------------------- */
+:root {
+  --primary: #4f46e5;       /* Indigo */
+  --primary-dark: #3730a3;  /* Deeper Indigo */
+  --secondary: #a855f7;     /* Purple */
+  --accent: #10b981;        /* Success Green/Teal */
+
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  --text: #1f2937;          /* Dark Text */
+  --text-dark: #FAFAFA;     /* Light Text (for use on dark backgrounds) */
+  --text-light: #6b7280;    /* Gray Text for hints */
+
+  --bg: #f9fafb;            /* Light Gray Base */
+  --bg-mid: #f3f4f6;        /* Slightly darker light background */
+  --bg-light: #ffffff;      /* Card BG for light mode */
+  --card-surface: #f3f4f6;  /* Surface BG for nested elements */
+  --border: #e5e7eb;        /* Subtle Border */
+
+  --shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* ------------------------------------------------------------------- */
+/* 2. DARK MODE VARIABLES (Applied via .dark-mode class on body) */
+/* ------------------------------------------------------------------- */
+body.dark-mode {
+  --primary: #6366f1;       /* Vibrant Indigo */
+  --primary-dark: #4f46e5;  /* Deeper Indigo */
+  --secondary: #a855f7;     /* Vibrant Purple */
+  --accent: #A7F3D0;        /* SOFT TEAL/MINT GREEN (The POP) */
+
+  --text: #FAFAFA;          /* Light Text */
+  --text-dark: #1f2937;     /* Dark Text (for use on light backgrounds) */
+  --text-light: #a3a3a3;    /* Light Gray Text for hints */
+
+  --bg: #121212;            /* Deep Charcoal/Black Base */
+  --bg-mid: #1E1E1E;        /* Slightly lighter dark background */
+  --bg-light: #242424;      /* Card BG for dark mode */
+  --card-surface: #2d2d2d;  /* Surface BG for nested elements */
+  --border: #333333;        /* Subtle Border */
+
+  --shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.7);
+}
+
+
+/* ------------------------------------------------------------------- */
+/* 3. BASE STYLES (Use variables) */
+/* ------------------------------------------------------------------- */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
-    'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+    Cantarell, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.6;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* Intro Background Override: Ensures the intro screen is white */
+body.intro-active {
+    background: white;
+    color: var(--text); /* Text defaults to dark text */
+}
+
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary) 100%);
+  color: var(--text-dark); /* text-dark for header text (white/light) */
+  padding: 2.5rem 2rem;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+
+.header h1 {
+  font-size: 2.8rem;
+  margin-bottom: 0.5rem;
+}
+
+/* NEW: Theme Toggle Button Style */
+.theme-toggle-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-dark); /* Always light text on the header */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+/* Progress Bar */
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+  transition: width 0.3s ease;
+}
+
+/* Step Dots */
+.step-dots {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 1rem 0;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.dot.active {
+  background: var(--accent);
+  transform: scale(1.4);
+  box-shadow: 0 0 15px var(--accent);
+  border-color: var(--accent);
+}
+
+.dot.completed {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+/* Main Content Area */
+.main-content {
+  flex: 1;
+  max-width: 800px;
+  margin: 2.5rem auto;
+  width: 100%;
+  padding: 0 1.5rem;
+}
+
+.step-container {
+  background: var(--bg-light);
+  color: var(--text);
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: var(--shadow);
+  animation: slideIn 0.3s ease;
+}
+
+/* Form Styles */
+.step-container h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--primary);
+}
+
+.section-intro {
+  background: var(--bg-mid);
+  padding: 1.25rem;
+  border-left: 5px solid var(--accent);
+  margin-bottom: 1.5rem;
+  border-radius: 6px;
+  color: var(--text-light);
+}
+
+.form-group label {
+  color: var(--text);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  background: var(--card-surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: background 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3); /* Accent Glow */
+  outline: none;
+}
+
+/* Buttons */
+.btn-primary {
+  background: var(--primary);
+  color: var(--text-dark);
+  padding: 0.85rem 1.8rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(99, 102, 241, 0.5);
+}
+
+.btn-secondary {
+    background: var(--bg-mid);
+    color: var(--text-light);
+    border: 1px solid var(--border);
+    padding: 0.85rem 1.8rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: var(--card-surface);
+    color: var(--text);
+}
+
+/* Footer */
+.footer {
+  background: var(--bg-light);
+  color: var(--text-light);
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  transition: background 0.3s, color 0.3s, border-color 0.3s;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Media Queries */
+@media (max-width: 640px) {
+  .header h1 { font-size: 2rem; }
+  .main-content { margin: 1.5rem auto; padding: 0 1rem; }
+  .step-container { padding: 1.5rem; border-radius: 12px; }
+  .theme-toggle-btn { top: 0.5rem; right: 0.5rem; padding: 0.4rem 0.8rem; font-size: 0.8rem;}
 }

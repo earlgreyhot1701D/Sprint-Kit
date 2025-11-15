@@ -2,9 +2,6 @@ import React, { useState } from 'react';
 
 export default function SetGoals({ projectState, onNext, onBack }) {
   const [goal, setGoal] = useState(projectState.goals?.goal || '');
-  const [successCriteria, setSuccessCriteria] = useState(
-    projectState.goals?.successCriteria || ''
-  );
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -14,26 +11,20 @@ export default function SetGoals({ projectState, onNext, onBack }) {
     setErrors({});
 
     if (!goal.trim()) {
-      setErrors({ goal: 'What is your goal?' });
+      setErrors({ goal: 'Tell us your goal!' });
       setLoading(false);
       return;
     }
 
-    if (!successCriteria.trim()) {
-      setErrors({ successCriteria: 'How will you know you finished?' });
-      setLoading(false);
-      return;
-    }
-
-    // Just check minimum length, don't call backend
-    if (successCriteria.trim().length < 10) {
-      setErrors({ successCriteria: 'Tell us a bit more about what "done" looks like' });
+    // Just check minimum length
+    if (goal.trim().length < 15) {
+      setErrors({ goal: "Tell us a bit more about what you want to make and how you'll know it worked" });
       setLoading(false);
       return;
     }
 
     onNext({
-      goals: { goal, successCriteria }
+      goals: { goal }
     });
 
     setLoading(false);
@@ -41,41 +32,26 @@ export default function SetGoals({ projectState, onNext, onBack }) {
 
   return (
     <div className="step-container">
-      <h2>🎯 What Do You Want to Finish?</h2>
+      <h2>🎯 Your Goal</h2>
 
       <form onSubmit={handleSubmit} className="form">
         <div className="form-group">
-          <label htmlFor="goal">By the end of your project, what will be done?</label>
+          <label htmlFor="goal">By the end, what will you have made/done, and how will you know it worked?</label>
           <div className="hint">
-            Example: "We will have a working robot that picks up tennis balls"
+            Example: "We will have a working robot that picks up tennis balls. We'll know it worked when it picks up at least 10 balls in 3 tries."
           </div>
           <textarea
             id="goal"
             placeholder="Write your goal here..."
             value={goal}
             onChange={(e) => setGoal(e.target.value)}
-            rows={3}
+            rows={4}
             className={errors.goal ? 'input-error' : ''}
           />
-          {errors.goal && <span className="error-text">{errors.goal}</span>}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="criteria">How will you KNOW you finished? What does "done" look like?</label>
-          <div className="hint">
-            Example: "We'll test it 3 times and it will pick up at least 10 balls"
+          <div className="char-count">
+            {goal.length}/15 characters
           </div>
-          <textarea
-            id="criteria"
-            placeholder="What will be the proof that you finished?"
-            value={successCriteria}
-            onChange={(e) => setSuccessCriteria(e.target.value)}
-            rows={3}
-            className={errors.successCriteria ? 'input-error' : ''}
-          />
-          {errors.successCriteria && (
-            <span className="error-text">{errors.successCriteria}</span>
-          )}
+          {errors.goal && <span className="error-text">{errors.goal}</span>}
         </div>
 
         <div className="form-actions">

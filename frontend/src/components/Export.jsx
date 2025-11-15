@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { api } from '../utils/api';
 
-export default function Export({ projectState, onBack }) {
+export default function Export({ projectState, onBack, onStartOver }) {
   const [downloading, setDownloading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const handleDownloadPDF = async () => {
     setDownloading(true);
@@ -46,8 +47,8 @@ ${projectState.tasks?.map((t) => `  • ${t.name} (${t.hours}h, ${t.difficulty})
    What Was Hard:
    ${projectState.reflection?.was_hard}
 
-   What I Learned:
-   ${projectState.reflection?.learned}
+   What I'd Do Differently:
+   ${projectState.reflection?.differently}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -58,7 +59,8 @@ ${projectState.badges?.map((b) => `   ${b.emoji || '🏆'} ${b.name}: ${b.reason
     `.trim();
 
     navigator.clipboard.writeText(text);
-    alert('✓ Copied to clipboard!');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -99,7 +101,7 @@ ${projectState.badges?.map((b) => `   ${b.emoji || '🏆'} ${b.name}: ${b.reason
         </div>
 
         <div className="summary-section">
-          <h4>What We Learned</h4>
+          <h4>Your Reflection</h4>
           <p>
             <strong>Went Well:</strong> {projectState.reflection?.went_well}
           </p>
@@ -107,7 +109,7 @@ ${projectState.badges?.map((b) => `   ${b.emoji || '🏆'} ${b.name}: ${b.reason
             <strong>Was Hard:</strong> {projectState.reflection?.was_hard}
           </p>
           <p>
-            <strong>I Learned:</strong> {projectState.reflection?.learned}
+            <strong>Would Do Differently:</strong> {projectState.reflection?.differently}
           </p>
         </div>
 
@@ -147,7 +149,7 @@ ${projectState.badges?.map((b) => `   ${b.emoji || '🏆'} ${b.name}: ${b.reason
             {downloading ? 'Generating PDF...' : '📄 Download as PDF'}
           </button>
           <button onClick={handleCopyToClipboard} className="btn-secondary">
-            📋 Copy to Clipboard
+            {copied ? '✓ Copied!' : '📋 Copy to Clipboard'}
           </button>
         </div>
       </div>
@@ -155,14 +157,14 @@ ${projectState.badges?.map((b) => `   ${b.emoji || '🏆'} ${b.name}: ${b.reason
       <div className="completion-message">
         <h3>🎉 You Did It!</h3>
         <p>
-          You planned a real project, learned about decomposition, estimation, and
-          collaboration. That's what real learners do!
+          You planned a real project, learned about breaking it down, estimating time, working with a team,
+          and thinking about your process. That's what real learners do!
         </p>
       </div>
 
       <div className="form-actions">
-        <button onClick={onBack} className="btn-secondary">
-          ← Back
+        <button onClick={onStartOver} className="btn-secondary">
+          🔄 Start Over
         </button>
       </div>
     </div>

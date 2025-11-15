@@ -23,19 +23,22 @@ export default function Brainstorm({ projectState, onNext, onBack }) {
 
   return (
     <div className="step-container">
-      <h2>💡 Brainstorm: Big Ideas First</h2>
+      <h2>💡 Brainstorm: Different Approaches</h2>
 
       <div className="hint-box">
         <p>💡 Just write down ideas. No idea is bad. Don't worry about whether it's possible yet.</p>
-        <p>💡 Write ideas fast. Don't stop to judge them.</p>
+        <p>💡 Write ideas fast. Don't stop to judge them. Think: different materials, different steps, different ways to test it.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="form">
         <div className="form-group">
-          <label htmlFor="ideas">What are 3-5 ideas for your project?</label>
+          <label htmlFor="ideas">What are 3-5 different ways to approach your project?</label>
+          <div className="hint">
+            Example: "Use wood instead of plastic" or "Build it step-by-step vs all at once" or "Test it with 5 people vs 1"
+          </div>
           <textarea
             id="ideas"
-            placeholder="Build a robot&#10;Make it fly&#10;Use solar power&#10;Add lights&#10;Make it colorful"
+            placeholder="Make it from wood&#10;Try a different design&#10;Use a simpler method&#10;Get help from the team&#10;Test it twice"
             value={brainstormIdeas}
             onChange={(e) => setBrainstormIdeas(e.target.value)}
             rows={6}

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
+import Intro from './components/Intro';
 import ProjectCreate from './components/ProjectCreate';
 import Brainstorm from './components/Brainstorm';
 import SetGoals from './components/SetGoals';
@@ -10,7 +11,9 @@ import Export from './components/Export';
 import Navigation from './components/Navigation';
 
 function App() {
+  const [showIntro, setShowIntro] = useState(true);
   const [step, setStep] = useState(1);
+  const [darkMode, setDarkMode] = useState(false); // Default to Light Mode
   const [projectState, setProjectState] = useState({
     step: 1,
     title: '',
@@ -19,13 +22,49 @@ function App() {
     goals: {},
     tasks: [],
     tasksEdited: false,
-    teamMembers: [],
+    teamMembers: [], // Will be set on the ProjectCreate screen (Step 1)
     assignments: {},
     timeline: {},
     reflection: {},
     insights: [],
     badges: []
   });
+
+  // NEW: Theme Toggle Function
+  const toggleTheme = () => {
+    setDarkMode(prev => !prev);
+  };
+
+  // EFFECT TO MANAGE GLOBAL BODY CLASS AND INTRO BACKGROUND
+  useEffect(() => {
+    // 1. Apply Dark/Light Mode Class to body
+    if (darkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+
+    // 2. Manage Intro Background (White background only when Intro is active)
+    if (showIntro) {
+      document.body.classList.add('intro-active');
+    } else {
+      document.body.classList.remove('intro-active');
+    }
+
+    // Cleanup function
+    return () => {
+      document.body.classList.remove('dark-mode');
+      document.body.classList.remove('intro-active');
+    };
+  }, [darkMode, showIntro]); // Dependencies
+
+  // Handle Intro completion - NO TEAM MEMBERS ARE PASSED ANYMORE
+  const handleIntroComplete = ({ skipSteps }) => {
+    // No team members to set, they will be set in ProjectCreate
+    setShowIntro(false);
+    setStep(1);
+    window.scrollTo(0, 0);
+  };
 
   const handleNext = (newData = {}) => {
     setProjectState(prev => ({ ...prev, ...newData }));
@@ -44,6 +83,28 @@ function App() {
 
   const handleUpdateProject = (updates) => {
     setProjectState(prev => ({ ...prev, ...updates }));
+  };
+
+  // Start over - go back to Intro
+  const handleStartOver = () => {
+    setShowIntro(true);
+    setStep(1);
+    setProjectState({
+      step: 1,
+      title: '',
+      description: '',
+      brainstormIdeas: [],
+      goals: {},
+      tasks: [],
+      tasksEdited: false,
+      teamMembers: [],
+      assignments: {},
+      timeline: {},
+      reflection: {},
+      insights: [],
+      badges: []
+    });
+    window.scrollTo(0, 0);
   };
 
   const renderStep = () => {
@@ -103,6 +164,7 @@ function App() {
           <Export
             projectState={projectState}
             onBack={handleBack}
+            onStartOver={handleStartOver}
           />
         );
       default:
@@ -110,12 +172,31 @@ function App() {
     }
   };
 
+  // Show Intro screen first
+  if (showIntro) {
+    return (
+      <div className="App-Intro-Wrapper">
+        <Intro
+          onStart={handleIntroComplete}
+          darkMode={darkMode}
+          toggleTheme={toggleTheme}
+        />
+      </div>
+    );
+  }
+
+  // Show main flow after Intro
   return (
     <div className="App">
       <header className="header">
         <h1>🚀 Sprint Kit</h1>
         <p>Plan your project. Learn real skills.</p>
-        
+
+        {/* Theme Toggle Button */}
+        <button onClick={toggleTheme} className="theme-toggle-btn" title="Toggle Light/Dark Mode">
+          {darkMode ? '☀️ Light Mode' : '🌑 Dark Mode'}
+        </button>
+
         {/* Step indicator dots */}
         <div className="step-dots">
           {Array.from({ length: 7 }).map((_, i) => (
@@ -126,7 +207,7 @@ function App() {
             />
           ))}
         </div>
-        
+
         <div className="progress-bar">
           <div
             className="progress-fill"

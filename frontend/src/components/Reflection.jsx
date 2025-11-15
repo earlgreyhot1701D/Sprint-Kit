@@ -16,7 +16,7 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
     const allFilled =
       (reflection.went_well?.length || 0) >= MIN_LENGTH &&
       (reflection.was_hard?.length || 0) >= MIN_LENGTH &&
-      (reflection.learned?.length || 0) >= MIN_LENGTH;
+      (reflection.differently?.length || 0) >= MIN_LENGTH;
 
     if (!allFilled) {
       alert('Please fill all reflection fields with at least 20 characters each');
@@ -31,9 +31,9 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
       setInsights(result.data.insights);
     } else {
       setInsights([
-        'You reflected on your learning. That is what real learners do!',
-        'You worked through challenges and kept going. That is persistence.',
-        'You are thinking about how you work. That is metacognition!'
+        'You thought about how you planned. That\'s metacognition!',
+        'You worked through challenges and kept going. That\'s persistence.',
+        'You reflected on your process, not just the result. That\'s how real learners think!'
       ]);
     }
 
@@ -80,8 +80,8 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
       newErrors.was_hard = `At least ${MIN_LENGTH} characters`;
     }
 
-    if (!reflection.learned || reflection.learned.length < MIN_LENGTH) {
-      newErrors.learned = `At least ${MIN_LENGTH} characters`;
+    if (!reflection.differently || reflection.differently.length < MIN_LENGTH) {
+      newErrors.differently = `At least ${MIN_LENGTH} characters`;
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -105,18 +105,22 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
 
   return (
     <div className="step-container">
-      <h2>🤔 What Did You Learn?</h2>
+      <h2>🤔 Reflect on Your Plan</h2>
 
       <p className="section-intro">
         Your project: <strong>{projectState.title}</strong>
       </p>
 
+      <div className="hint-box">
+        <p>💡 Thinking about HOW you planned (not the finished project) helps you get better at planning.</p>
+      </div>
+
       <form onSubmit={handleSubmit} className="form">
         <div className="form-group">
-          <label htmlFor="went_well">What went well?</label>
+          <label htmlFor="went_well">What went well in your planning?</label>
           <textarea
             id="went_well"
-            placeholder="What did your team do right?"
+            placeholder="What did your team do right? What made the planning easier?"
             value={reflection.went_well || ''}
             onChange={(e) => handleReflectionChange('went_well', e.target.value)}
             rows={3}
@@ -129,10 +133,10 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="was_hard">What was hard?</label>
+          <label htmlFor="was_hard">What was hard to plan?</label>
           <textarea
             id="was_hard"
-            placeholder="What gave you trouble?"
+            placeholder="What made planning difficult? What did you struggle with?"
             value={reflection.was_hard || ''}
             onChange={(e) => handleReflectionChange('was_hard', e.target.value)}
             rows={3}
@@ -145,19 +149,19 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="learned">What did YOU learn about yourself?</label>
+          <label htmlFor="differently">What would you do differently next time you plan?</label>
           <textarea
-            id="learned"
-            placeholder="About how you work, think, or help others"
-            value={reflection.learned || ''}
-            onChange={(e) => handleReflectionChange('learned', e.target.value)}
+            id="differently"
+            placeholder="What will you change? What did you learn about planning?"
+            value={reflection.differently || ''}
+            onChange={(e) => handleReflectionChange('differently', e.target.value)}
             rows={3}
-            className={errors.learned ? 'input-error' : ''}
+            className={errors.differently ? 'input-error' : ''}
           />
           <div className="char-count">
-            {(reflection.learned || '').length}/{MIN_LENGTH} characters
+            {(reflection.differently || '').length}/{MIN_LENGTH} characters
           </div>
-          {errors.learned && <span className="error-text">{errors.learned}</span>}
+          {errors.differently && <span className="error-text">{errors.differently}</span>}
         </div>
 
         <div className="button-group">
