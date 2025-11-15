@@ -384,7 +384,7 @@ def award_badges_endpoint():
 @app.route("/api/projects/reflection-insights", methods=["POST"])
 def get_reflection_insights():
     """
-    Generate AI insights from student reflection.
+    Generate AI insights from student reflection AND award badges.
     Supports both NEW format (reflection.prompts + reflection.answers) and OLD format (went_well/was_hard/learned).
 
     Request (NEW format): {
@@ -393,7 +393,9 @@ def get_reflection_insights():
         "reflection": {
             "prompts": [list of prompts],
             "answers": [list of answers]
-        }
+        },
+        "tasks_edited": bool (optional, default False),
+        "timeline_accuracy": float (optional, default 1.0)
     }
 
     Request (OLD format): {
@@ -403,7 +405,15 @@ def get_reflection_insights():
             "went_well": str,
             "was_hard": str,
             "learned": str
-        }
+        },
+        "tasks_edited": bool (optional, default False),
+        "timeline_accuracy": float (optional, default 1.0)
+    }
+
+    Returns: {
+        "insights": [...],
+        "badges": [...],
+        "source": "claude" or "generic"
     }
     """
     try:
@@ -411,6 +421,8 @@ def get_reflection_insights():
         title = data.get('title', 'Project')
         project_type = data.get('project_type', 'other')
         reflection = data.get('reflection', {})
+        tasks_edited = data.get('tasks_edited', False)
+        timeline_accuracy = data.get('timeline_accuracy', 1.0)
 
         if not reflection:
             return jsonify({"error": "Reflection data missing"}), 400
@@ -431,6 +443,14 @@ def get_reflection_insights():
                 "was_hard": combined_reflection,
                 "learned": combined_reflection
             }
+
+            # Generate badges using NEW format (prompts + answers)
+            badges = award_badges(
+                reflection_prompts=prompts,
+                reflection_answers=answers,
+                tasks_edited=tasks_edited,
+                timeline_accuracy=timeline_accuracy
+            )
         # Handle OLD format: went_well/was_hard/learned
         else:
             reflection_data = {
@@ -441,7 +461,21 @@ def get_reflection_insights():
                 "learned": reflection.get('learned', '')
             }
 
+            # Generate badges using OLD format (reflection_text)
+            combined_old_reflection = f"{reflection.get('went_well', '')} {reflection.get('was_hard', '')} {reflection.get('learned', '')}"
+            badges = award_badges(
+                reflection_prompts=None,
+                reflection_answers=None,
+                tasks_edited=tasks_edited,
+                timeline_accuracy=timeline_accuracy,
+                reflection_text=combined_old_reflection
+            )
+
+        # Generate insights
         result = generate_reflection_insights(reflection_data)
+
+        # Add badges to the result
+        result['badges'] = badges
 
         return jsonify(result), 200
 
@@ -449,7 +483,8 @@ def get_reflection_insights():
         error = handle_error_safely(e, "get_reflection_insights")
         return jsonify({
             "error": error["user_message"],
-            "insights": []
+            "insights": [],
+            "badges": []
         }), 500
 
 
