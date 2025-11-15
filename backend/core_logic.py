@@ -2,6 +2,7 @@
 Core business logic for Sprint Kit.
 Validation functions and badge logic.
 No external dependencies - pure logic.
+UPDATED: Badge logic now analyzes actual reflection answers, not generic keywords.
 """
 
 import logging
@@ -243,11 +244,14 @@ def award_badges(reflection_prompts: list = None, reflection_answers: list = Non
     """
     Award badges based on actual learning + execution.
 
+    Analyzes reflection_answers (NEW format) to determine if student demonstrated real learning.
+    Falls back to reflection_text (OLD format) for backward compatibility.
+
     Args:
         reflection_prompts: List of custom reflection prompts (NEW)
         reflection_answers: List of answers indexed to prompts (NEW)
         tasks_edited: Whether student edited the AI-generated tasks
-        timeline_accuracy: Ratio of actual to estimated time
+        timeline_accuracy: Ratio of actual to estimated time (0.8-1.2 = good)
         reflection_text: Old format fallback (for backward compatibility)
 
     Returns: List of badge dicts with name, reason, emoji
@@ -255,58 +259,52 @@ def award_badges(reflection_prompts: list = None, reflection_answers: list = Non
     badges = []
 
     # NEW: Use custom prompts + answers if available
+    # This is the NEW flow - prompts are specific to project, so we analyze answers
     if reflection_prompts and reflection_answers:
-        for prompt, answer in zip(reflection_prompts, reflection_answers):
-            if not answer or len(answer.strip()) < 5:
-                continue  # Skip empty/too-short answers
+        combined_reflection = " ".join(reflection_answers) if reflection_answers else ""
+        combined_reflection_lower = combined_reflection.lower()
 
-            prompt_lower = prompt.lower()
-            answer_lower = answer.lower()
+        # Badge 1: "I Can Break It Down"
+        # Awarded if: Student mentions tasks, steps, decomposition, or edited tasks
+        decomp_keywords = ["break", "task", "step", "smaller", "split", "chunk", "pieces", "break down", "divided"]
+        if (tasks_edited or any(kw in combined_reflection_lower for kw in decomp_keywords)) and len(combined_reflection) > 20:
+            if not any(b["name"] == "I Can Break It Down" for b in badges):
+                badges.append({
+                    "name": "I Can Break It Down",
+                    "reason": "You learned how to split big goals into manageable tasks.",
+                    "emoji": "ðŸ§©"
+                })
 
-            # Badge 1: "I Can Break It Down"
-            # Check if THIS prompt was about decomposition/tasks
-            decomp_keywords = ["break", "tasks", "steps", "smaller", "split", "chunks", "pieces"]
-            was_decomp_prompt = any(kw in prompt_lower for kw in decomp_keywords)
-
-            if (was_decomp_prompt or tasks_edited) and len(answer) > 20:
-                if not any(b["name"] == "I Can Break It Down" for b in badges):
-                    badges.append({
-                        "name": "I Can Break It Down",
-                        "reason": "You learned how to split big goals into manageable tasks.",
-                        "emoji": "🧩"
-                    })
-
-            # Badge 3: "Team Player"
-            # Check if THIS prompt was about collaboration
-            collab_keywords = ["team", "together", "helped", "worked with", "partner", "group", "collaborated"]
-            was_collab_prompt = any(kw in prompt_lower for kw in collab_keywords)
-
-            if was_collab_prompt and len(answer) > 20:
-                if not any(b["name"] == "Team Player" for b in badges):
-                    badges.append({
-                        "name": "Team Player",
-                        "reason": "Your teamwork and collaboration made the difference!",
-                        "emoji": "👥"
-                    })
+        # Badge 3: "Team Player"
+        # Awarded if: Student mentions teamwork, collaboration, helping others
+        collab_keywords = ["team", "together", "helped", "worked with", "partner", "group", "collaborated", "coordinated", "communicated", "teammate"]
+        if any(kw in combined_reflection_lower for kw in collab_keywords) and len(combined_reflection) > 20:
+            if not any(b["name"] == "Team Player" for b in badges):
+                badges.append({
+                    "name": "Team Player",
+                    "reason": "Your teamwork and collaboration made the difference!",
+                    "emoji": "ðŸ'¥"
+                })
 
     # OLD: Fallback for backward compatibility (if no custom prompts)
+    # This keeps the app working with old-format reflection data
     elif reflection_text:
         reflection_lower = reflection_text.lower()
 
-        decomposition_keywords = ["break", "smaller", "steps", "tasks", "chunks", "pieces", "split"]
+        decomposition_keywords = ["break", "task", "step", "smaller", "split", "chunk", "pieces", "break down", "divided"]
         if tasks_edited or any(kw in reflection_lower for kw in decomposition_keywords):
             badges.append({
                 "name": "I Can Break It Down",
                 "reason": "You learned how to split big goals into manageable tasks.",
-                "emoji": "🧩"
+                "emoji": "ðŸ§©"
             })
 
-        collaboration_keywords = ["team", "together", "helped", "worked with", "partner", "group", "collaborated"]
+        collaboration_keywords = ["team", "together", "helped", "worked with", "partner", "group", "collaborated", "coordinated", "communicated", "teammate"]
         if any(kw in reflection_lower for kw in collaboration_keywords):
             badges.append({
                 "name": "Team Player",
                 "reason": "Your teamwork and collaboration made the difference!",
-                "emoji": "👥"
+                "emoji": "ðŸ'¥"
             })
 
     # Badge 2: "Planner Power" (independent, works same way)
@@ -315,7 +313,7 @@ def award_badges(reflection_prompts: list = None, reflection_answers: list = Non
         badges.append({
             "name": "Planner Power",
             "reason": "You're good at guessing how long things take!",
-            "emoji": "⏰"
+            "emoji": "â°"
         })
 
     return badges
@@ -334,6 +332,6 @@ def get_badge_feedback(badges: list) -> str:
         return f"You earned a badge: {badges[0]['name']}. Great job!"
 
     if len(badges) >= 3:
-        return "You earned all 3 badges! You're a project planning expert! 🏆"
+        return "You earned all 3 badges! You're a project planning expert! ðŸ†"
 
     return f"You earned {len(badges)} badges. Keep building these skills!"

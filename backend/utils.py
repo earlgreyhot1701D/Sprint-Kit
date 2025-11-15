@@ -1,6 +1,7 @@
 """
 Utility functions for Sprint Kit.
 All external API calls are wrapped with comprehensive safety checks.
+UPDATED: Pass methodology guidance to prompts for context-aware task generation.
 """
 
 import logging
@@ -11,9 +12,7 @@ from anthropic import Anthropic
 from config import (
     CLAUDE_API_KEY,
     CLAUDE_MODEL,
-    MAX_TOKENS,
-    FALLBACK_TASKS,
-    GENERIC_REFLECTION_INSIGHTS
+    MAX_TOKENS
 )
 from prompts import (
     DETECT_PROJECT_TYPE_PROMPT,
@@ -21,7 +20,8 @@ from prompts import (
     TIME_ESTIMATION_PROMPT,
     ADAPTIVE_REFLECTION_PROMPT,
     REFLECTION_INSIGHT_PROMPT,
-    get_fallback_tasks
+    get_fallback_tasks,
+    get_methodology_guidance
 )
 from safety import (
     validate_before_claude_call,
@@ -72,7 +72,7 @@ def detect_project_type(project_title: str, project_description: str) -> str:
         return "other"
 
 
-# ===== LAYER 2: TASK GENERATION (Context-Aware) =====
+# ===== LAYER 2: TASK GENERATION (Context-Aware, Methodology-Based) =====
 
 def generate_tasks_with_context(
     project_title: str,
@@ -83,6 +83,7 @@ def generate_tasks_with_context(
 ) -> dict:
     """
     Generate type-specific tasks scaled by experience level and team size.
+    Uses methodology guidance to ensure tasks match project type.
 
     Returns: {
         "tasks": list of task dicts,
@@ -90,13 +91,17 @@ def generate_tasks_with_context(
         "message": str or None
     }
     """
+    # Get methodology guidance based on project type, experience, team size
+    methodology_guidance = get_methodology_guidance(project_type, experience_level, team_size)
+
     response = call_claude_safely(
         TASK_BREAKDOWN_PROMPT,
         project_title=project_title,
         project_description=project_description,
         project_type=project_type,
         experience_level=experience_level,
-        team_size=team_size
+        team_size=team_size,
+        methodology_guidance=methodology_guidance
     )
 
     if not response["success"]:
@@ -135,6 +140,7 @@ def estimate_timeline_with_context(
 ) -> dict:
     """
     Estimate if timeline is realistic based on experience and team size.
+    Accounts for parallel work with larger teams and capacity based on experience.
 
     Returns: {
         "total_hours": int,
@@ -203,6 +209,7 @@ def generate_adaptive_reflection_prompts(
 ) -> dict:
     """
     Generate 3 custom reflection prompts based on student's project.
+    Customized to project type and what student has already shared.
 
     Returns: {
         "prompts": list of 3 custom prompts,
@@ -249,31 +256,31 @@ def generate_adaptive_reflection_prompts(
     }
 
 
-# ===== CLAUDE CORE CALL =====
+# ===== CLAUDE SAFETY WRAPPER =====
 
 def call_claude_safely(prompt_template: str, **kwargs) -> dict:
     """
-    Call Claude with comprehensive safety checks before AND after.
-    This is the ONLY place Claude gets called.
+    Call Claude with comprehensive safety checks before and after.
+    This is the ONLY place Claude gets called. All safety happens here.
 
     Returns: {
         "success": bool,
-        "data": str or None,
-        "user_message": str or None
+        "data": str or None (Claude's response),
+        "user_message": str or None (error message if failed)
     }
     """
-
-    # PRE-CALL: Format and validate
+    # PRE-CALL: Format prompt with kwargs
     try:
         input_text = prompt_template.format(**kwargs)
     except KeyError as e:
-        logger.error(f"Prompt format error: {e}")
+        logger.error(f"Prompt template missing key: {e}")
         return {
             "success": False,
             "data": None,
-            "user_message": "Something went wrong. Please try again."
+            "user_message": "Prompt formatting error"
         }
 
+    # PRE-CALL: Check input safety
     pre_validation = validate_before_claude_call(input_text)
 
     if not pre_validation["safe"]:
@@ -281,7 +288,7 @@ def call_claude_safely(prompt_template: str, **kwargs) -> dict:
         return {
             "success": False,
             "data": None,
-            "user_message": "That request isn't something I can help with."
+            "user_message": "Request contains unsafe content"
         }
 
     # CLAUDE CALL
@@ -325,11 +332,12 @@ def call_claude_safely(prompt_template: str, **kwargs) -> dict:
     }
 
 
-# ===== REFLECTION INSIGHTS (Updated for Layer 3) =====
+# ===== REFLECTION INSIGHTS (Analyzes actual reflection content) =====
 
 def generate_reflection_insights(reflection_data: dict) -> dict:
     """
     Generate personalized insights from student reflection.
+    Analyzes actual reflection answers to generate specific, relevant insights.
 
     Args:
         reflection_data: Dict with went_well, was_hard, learned, project_title, project_type
@@ -346,7 +354,11 @@ def generate_reflection_insights(reflection_data: dict) -> dict:
     if not pre_validation["safe"]:
         logger.warning("Reflection input failed safety check")
         return {
-            "insights": GENERIC_REFLECTION_INSIGHTS,
+            "insights": [
+                "You worked on a project and completed it.",
+                "You reflected on your experience.",
+                "Keep building these skills!"
+            ],
             "source": "generic"
         }
 
@@ -362,7 +374,11 @@ def generate_reflection_insights(reflection_data: dict) -> dict:
     if not response["success"]:
         logger.warning("Reflection insights generation failed, using generic")
         return {
-            "insights": GENERIC_REFLECTION_INSIGHTS,
+            "insights": [
+                "You worked on a project and completed it.",
+                "You reflected on your experience.",
+                "Keep building these skills!"
+            ],
             "source": "generic"
         }
 
@@ -377,7 +393,11 @@ def generate_reflection_insights(reflection_data: dict) -> dict:
         logger.error(f"Failed to parse insights: {e}")
 
     return {
-        "insights": GENERIC_REFLECTION_INSIGHTS,
+        "insights": [
+            "You worked on a project and completed it.",
+            "You reflected on your experience.",
+            "Keep building these skills!"
+        ],
         "source": "generic"
     }
 

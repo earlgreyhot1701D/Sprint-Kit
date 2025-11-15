@@ -2,10 +2,66 @@
 Prompt templates for Sprint Kit.
 ALL prompts include explicit safety constraints and are optimized for middle school (grades 6-8).
 These are sent to Claude with strict guardrails.
+UPDATED: Methodology-aware prompts based on project type, experience level, and team size.
 """
 
 # ============================================================================
-# LAYER 1: PROJECT TYPE DETECTION (New - Saturday addition)
+# HELPER: Generate methodology guidance based on project type
+# ============================================================================
+
+def get_methodology_guidance(project_type: str, experience_level: str, team_size: str) -> str:
+    """
+    Generate type-specific methodology guidance for Claude.
+    Ensures tasks match project type (tech vs paper vs creative vs event vs research).
+    """
+    guidance_map = {
+        "hardware": f"""
+For a hardware/building project with {experience_level} team of {team_size}:
+- Include tasks for: gathering materials, planning/designing, building/assembling, testing, troubleshooting
+- Give beginners smaller, concrete steps; give experienced teams bigger integration challenges
+- Time estimates: Materials 1-2h, Design 2-3h, Build 3-5h (scales with complexity), Test 1-2h
+- Mention specific tools, materials, or safety considerations where relevant
+""",
+        "software": f"""
+For a coding/software project with {experience_level} team of {team_size}:
+- Include tasks for: planning features, writing code, testing/debugging, optimization
+- Give beginners smaller features/functions; give experienced teams architecture challenges
+- Time estimates: Planning 1-2h, Coding 3-6h (varies), Testing/Debug 2-3h
+- Mention specific languages, libraries, or testing approaches
+""",
+        "creative": f"""
+For a creative project (video, art, writing, music) with {experience_level} team of {team_size}:
+- Include tasks for: brainstorming/planning, creating content, editing/refining, feedback, finalization
+- Give beginners simpler formats (photos, short writing); give experienced teams complex edits/effects
+- Time estimates: Brainstorm 1-2h, Create 4-6h, Edit 2-3h, Refine 1-2h
+- Mention specific tools (cameras, software, instruments) where relevant
+""",
+        "event": f"""
+For an event/organization project with {experience_level} team of {team_size}:
+- Include tasks for: planning logistics, promotion/outreach, setup, running event, cleanup/debrief
+- Give beginners smaller scopes (10 people); give experienced teams complex coordination (100+ people)
+- Time estimates: Planning 2-3h, Promotion 1-2h, Setup 1-2h, Run event 2-4h, Cleanup 1h
+- Mention coordination, communication, or delegation approaches
+""",
+        "research": f"""
+For a research/inquiry project with {experience_level} team of {team_size}:
+- Include tasks for: finding sources, reading/analyzing, synthesizing findings, writing report, presenting
+- Give beginners simple topics with available sources; give experienced teams complex analysis/synthesis
+- Time estimates: Research 3-4h, Read/Analyze 2-3h, Write 2-3h, Present 1-2h
+- Mention types of sources (academic, news, interviews) and citation approaches
+""",
+        "other": f"""
+For a general project with {experience_level} team of {team_size}:
+- Include tasks for: planning, gathering resources, executing main work, testing/reviewing, finishing
+- Adapt complexity to experience level
+- Time estimates vary widely; ask for clarification if unclear
+"""
+    }
+    return guidance_map.get(project_type, guidance_map["other"])
+
+
+# ============================================================================
+# LAYER 1: PROJECT TYPE DETECTION (Unchanged)
 # ============================================================================
 
 DETECT_PROJECT_TYPE_PROMPT = """
@@ -32,7 +88,7 @@ Do NOT include anything except the JSON.
 """
 
 # ============================================================================
-# LAYER 2: TASK BREAKDOWN (Updated - Now uses project type context)
+# LAYER 2: TASK BREAKDOWN (Updated - Now uses methodology guidance)
 # ============================================================================
 
 TASK_BREAKDOWN_PROMPT = """
@@ -53,12 +109,16 @@ Project Type: {project_type}
 Team Experience Level: {experience_level}
 Team Size: {team_size}
 
+METHODOLOGY GUIDANCE (Tailor tasks to project type):
+{methodology_guidance}
+
 Generate 5-8 concrete tasks. Each task should:
 - Be doable in 1-3 days
 - Have a clear outcome (students can see when it's done)
 - Be specific and actionable
-- Match the project type (e.g., hardware tasks mention materials/tools)
+- Match the project type (e.g., hardware tasks mention materials/tools, papers mention research/drafting)
 - Scale to team experience (beginners: smaller tasks; experienced: larger)
+- Account for team size (1 person: can do everything; 4+ people: parallel work possible)
 
 Format ONLY as JSON:
 [
@@ -72,31 +132,8 @@ If you cannot generate tasks, respond ONLY with:
 DO NOT include anything except the JSON array.
 """
 
-TASK_BREAKDOWN_BY_TYPE = {
-    "hardware": {
-        "keywords": ["motor", "frame", "materials", "assembly", "test", "power"],
-        "example_tasks": ["Gather materials", "Build frame", "Test mechanics", "Troubleshoot"]
-    },
-    "software": {
-        "keywords": ["code", "function", "debug", "test", "interface", "feature"],
-        "example_tasks": ["Plan features", "Write code", "Debug errors", "Test functionality"]
-    },
-    "creative": {
-        "keywords": ["design", "script", "storyboard", "edit", "record", "refine"],
-        "example_tasks": ["Brainstorm ideas", "Create content", "Edit/refine", "Finalize"]
-    },
-    "event": {
-        "keywords": ["plan", "organize", "promote", "setup", "run", "debrief"],
-        "example_tasks": ["Make a plan", "Send invites", "Setup logistics", "Run event"]
-    },
-    "research": {
-        "keywords": ["research", "gather info", "analyze", "write", "present", "cite"],
-        "example_tasks": ["Research sources", "Take notes", "Analyze findings", "Write report"]
-    }
-}
-
 # ============================================================================
-# LAYER 2B: TIME ESTIMATION (Updated - Now context-aware)
+# LAYER 2B: TIME ESTIMATION (Updated - Now context-aware with methodology)
 # ============================================================================
 
 TIME_ESTIMATION_PROMPT = """
@@ -104,17 +141,26 @@ Help a middle school student understand if their project timeline is realistic.
 
 SAFETY CONSTRAINTS:
 1. Only provide time estimates and realistic feedback.
-2. Assume realistic work hours: beginners 1-2/day, intermediate 2-3/day, advanced 3-4/day
-3. Be conservative (better to overestimate than underestimate).
-4. Don't include external resources or links.
-5. Keep language simple and encouraging.
+2. Use work capacity based on experience: beginners 1-2h/day, intermediate 2-3h/day, advanced 3-4h/day
+3. Account for team size: 1 person = all work on them; 4+ people = work can be parallel
+4. Be conservative (better to overestimate than underestimate).
+5. Don't include external resources or links.
+6. Keep language simple and encouraging.
 
 Project Tasks (JSON format): {tasks_json}
 Available Days Until Deadline: {deadline_days}
 Team Experience: {experience_level}
 Team Size: {team_size}
 
-Analyze whether the timeline is realistic for this team.
+CALCULATION APPROACH:
+- For {experience_level} with team size {team_size}, available work capacity per day is approximately:
+  - Beginner + small team: 2-3 hours/day total
+  - Intermediate + medium team: 4-6 hours/day total (work can happen in parallel)
+  - Advanced + large team: 6-10 hours/day total (good coordination)
+- Adjust expectations based on task complexity and whether work can be done in parallel
+- Red flags: If total work >> available hours, flag it
+
+Analyze whether the timeline is realistic for this specific team.
 
 Respond ONLY with JSON:
 {{
@@ -124,17 +170,17 @@ Respond ONLY with JSON:
   "realistic": true/false,
   "status": "good/tight/too_tight",
   "message": "Helpful message about the timeline (1-2 sentences, grade 6-8 language)",
-  "suggestion": "Optional suggestion if tight (e.g., 'Consider breaking Task X into smaller pieces')"
+  "suggestion": "Optional suggestion if tight (e.g., 'Consider breaking Task X into smaller pieces' or 'Ask for help with the hardest tasks')"
 }}
 
 Keep messages simple and encouraging. Use phrases like:
 - "You've got plenty of time!"
 - "That's doable, but you'll be busy."
-- "This is tight—consider asking for help or adding time."
+- "This is tightâ€"consider asking for help or adding time."
 """
 
 # ============================================================================
-# LAYER 3: ADAPTIVE REFLECTION PROMPTS (New - Saturday addition)
+# LAYER 3: ADAPTIVE REFLECTION PROMPTS (Updated - More specific to project type)
 # ============================================================================
 
 ADAPTIVE_REFLECTION_PROMPT = """
@@ -148,22 +194,25 @@ What They Learned: {what_learned}
 
 Generate 3 specific, customized reflection prompts based on their project.
 Each prompt should:
-- Reference something specific they mentioned
-- Ask about HOW they solved/did something, not just WHAT
+- Reference something specific they mentioned OR reference the project type
+- Ask about HOW they solved/did something or WHY something was hard, not just WHAT happened
 - Be appropriate for grades 6-8 (simple, concrete language)
-- Focus on thinking/learning, not effort/feelings
+- Focus on thinking/learning/problem-solving, not just effort/feelings
+- Match their project type (e.g., for hardware: "How did you troubleshoot when...?", for paper: "What sources helped you..?")
 
-Examples:
-- "You said the motor kept breaking. How did you figure out what was wrong?"
-- "You worked with teammates. Tell me one way they helped you."
-- "Planning seemed hard. What made it difficult?"
+Examples by type:
+- Hardware: "You said the motor kept breaking. How did you figure out what was wrong?"
+- Software: "You mentioned debugging was hard. Walk me through what you tried to fix it."
+- Creative: "Tell me about a moment where your design didn't work—how did you fix it?"
+- Event: "You worked with teammates. Give me one example of how you coordinated together."
+- Research: "You found multiple sources. How did you decide which information was most important?"
 
 Respond ONLY with JSON:
 {{
   "prompts": [
-    "Prompt 1 here (specific to their project)",
-    "Prompt 2 here (specific to their project)",
-    "Prompt 3 here (specific to their project)"
+    "Prompt 1 here (specific to their project and what they shared)",
+    "Prompt 2 here (specific to their project and what they shared)",
+    "Prompt 3 here (specific to their project and what they shared)"
   ]
 }}
 
@@ -171,11 +220,11 @@ DO NOT include anything except the JSON.
 """
 
 # ============================================================================
-# REFLECTION INSIGHTS (Updated - Now context-aware, optimized)
+# REFLECTION INSIGHTS (Updated - Now analyzes actual reflection content)
 # ============================================================================
 
 REFLECTION_INSIGHT_PROMPT = """
-Help a student reflect on their project learning and generate insights.
+Help a student reflect on their project learning and generate specific insights.
 
 SAFETY CONSTRAINTS:
 1. Focus ONLY on project-related learning.
@@ -193,16 +242,21 @@ Their Reflection:
 - What was hard: "{what_was_hard}"
 - What they learned: "{what_learned}"
 
-Generate 2-3 specific insights about their learning and growth from this project.
+Analyze their responses and generate 2-3 SPECIFIC insights about their learning and growth from THIS project.
 Focus on:
-- Problem-solving strategies they used or learned
-- Collaboration insights (teamwork, communication)
-- Planning insights (estimation, decomposition)
+- Problem-solving strategies they actually used or discovered
+- Collaboration insights (teamwork, communication, delegation)
+- Planning/decomposition insights (did they break work down? estimate well? adjust timeline?)
 - Creative thinking or trying new approaches
 - Persistence when something was hard
+- Technical or craft skills they developed
+
+KEY: Make insights specific to what they wrote, not generic praise.
+- If they said "X was hard but I figured it out," acknowledge the specific skill (debugging, research, communication)
+- If they worked with teammates, reference what they actually said about teamwork
+- If they mentioned planning, connect it to project management learning
 
 Keep each insight to 1-2 sentences. Use simple, concrete language.
-Celebrate what they actually learned, not generic praise.
 
 Respond ONLY with JSON:
 {{
@@ -287,17 +341,3 @@ def get_fallback_tasks(project_type: str = "other") -> list:
         List of task dictionaries with "task", "hours", and "difficulty"
     """
     return FALLBACK_TASKS_BY_TYPE.get(project_type, FALLBACK_TASKS_BY_TYPE["other"])
-
-
-def get_type_specific_guidance(project_type: str) -> dict:
-    """
-    Return type-specific guidance for Claude to improve task quality.
-    Used internally to help Claude generate better type-specific tasks.
-
-    Args:
-        project_type: One of the project types from TASK_BREAKDOWN_BY_TYPE
-
-    Returns:
-        Dictionary with "keywords" and "example_tasks" for the project type
-    """
-    return TASK_BREAKDOWN_BY_TYPE.get(project_type, TASK_BREAKDOWN_BY_TYPE.get("other", {}))
