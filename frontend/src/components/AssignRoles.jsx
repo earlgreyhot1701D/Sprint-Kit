@@ -15,17 +15,52 @@ export default function AssignRoles({ projectState, onNext, onBack, onUpdate }) 
     return date.toISOString().split('T')[0];
   }
 
+  function calculateDeadlineDays(deadlineDate) {
+    const today = new Date();
+    const deadline = new Date(deadlineDate);
+    const diffMs = deadline - today;
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return Math.max(1, diffDays); // At least 1 day
+  }
+
   useEffect(() => {
     validateTimeline();
   }, [deadline]);
 
   const validateTimeline = async () => {
-    if (!deadline) return;
+    if (!deadline || !projectState.tasks || projectState.tasks.length === 0) return;
 
-    const result = await api.validateTimeline(projectState.tasks, deadline);
+    setLoading(true);
+
+    // NEW: Pass context to backend for personalized estimation
+    const deadlineDays = calculateDeadlineDays(deadline);
+    const result = await api.estimateTimeline(
+      projectState.tasks,
+      deadlineDays,
+      projectState.experience_level || 'beginner',
+      projectState.team_size || '1'
+    );
+
     if (result.success) {
       setTimelineResult(result.data);
+    } else {
+      console.warn('Timeline estimation failed:', result.error);
+      // Fallback: basic calculation
+      const totalHours = projectState.tasks.reduce((sum, task) => sum + (task.hours || 0), 0);
+      const availableHours = deadlineDays * 8; // Assume 8 hours/day max
+      setTimelineResult({
+        total_hours: totalHours,
+        available_hours: availableHours,
+        realistic: totalHours <= availableHours,
+        status: totalHours <= availableHours ? 'good' : 'too_tight',
+        message: totalHours <= availableHours
+          ? 'You have enough time for this project!'
+          : 'This timeline is tight. Consider asking for help or extending the deadline.',
+        suggestion: null
+      });
     }
+
+    setLoading(false);
   };
 
   const handleAssign = (taskIndex, teamMember) => {
@@ -82,7 +117,13 @@ export default function AssignRoles({ projectState, onNext, onBack, onUpdate }) 
           />
         </div>
 
-        {timelineResult && (
+        {loading && (
+          <div className="loading-state">
+            <p>Checking your timeline...</p>
+          </div>
+        )}
+
+        {timelineResult && !loading && (
           <div
             className={`timeline-feedback ${
               timelineResult.status === 'good'
@@ -99,6 +140,9 @@ export default function AssignRoles({ projectState, onNext, onBack, onUpdate }) 
               <strong>You have:</strong> {timelineResult.available_hours} hours
             </p>
             <p className="timeline-message">{timelineResult.message}</p>
+            {timelineResult.suggestion && (
+              <p className="timeline-suggestion">💡 {timelineResult.suggestion}</p>
+            )}
             {/* Status indicator */}
             <div className="timeline-status">
               {timelineResult.status === 'good' && <span className="badge-green">✓ On track</span>}
