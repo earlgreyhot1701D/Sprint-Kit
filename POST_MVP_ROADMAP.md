@@ -2,6 +2,62 @@
 
 This document outlines features for post-hackathon development, prioritized by impact and feasibility.
 
+---
+
+## What's Already Built (MVP Complete) ✅
+
+**Fully Functional Features (Hackathon Submission):**
+
+### Core 7-Step Workflow
+- ✅ **Step 1: Create Project** - Define project, team, timeline
+- ✅ **Step 2: Brainstorm** - Generate ideas freely
+- ✅ **Step 3: Set Goals** - Define success criteria
+- ✅ **Step 4: Break It Down** - AI-powered task generation (3-layer personalization)
+- ✅ **Step 5: Assign Roles & Timeline** - Distribute work, validate timeline
+- ✅ **Step 6: Reflection** - Custom prompts + AI insights + badge awards
+- ✅ **Step 7: Export** - PDF and text export
+
+### AI Features (3-Layer Personalization)
+- ✅ **Project type detection** - Hardware, software, creative, event, research, other
+- ✅ **Context-aware task generation** - Scales to experience level + team size
+- ✅ **Adaptive reflection prompts** - Custom questions based on project
+- ✅ **Reflection insights** - AI analyzes student answers
+- ✅ **Fallback tasks** - Type-specific templates if Claude fails
+
+### Badge System
+- ✅ **"I Can Break It Down"** - Decomposition badge
+- ✅ **"Planner Power"** - Time estimation badge
+- ✅ **"Team Player"** - Collaboration badge
+- ✅ **Badge logic** - Keyword analysis + timeline accuracy + task editing detection
+
+### Safety & Privacy
+- ✅ **Multi-layer validation** - Before Claude, in prompts, after Claude, fallback
+- ✅ **Prompt injection protection** - Server-side blocking
+- ✅ **PII validation** - No email/phone exposure
+- ✅ **Out-of-scope refusal** - Won't help with homework/cheating
+- ✅ **COPPA compliance** - Zero persistent data collection
+- ✅ **In-memory sessions** - Auto-delete on browser close
+
+### Testing & Quality
+- ✅ **15+ backend tests** - Safety, logic, badge generation
+- ✅ **Comprehensive test suite** - pytest with full coverage
+- ✅ **Code quality** - Modular, documented, type-safe
+
+### Documentation
+- ✅ **README** - Complete setup + architecture
+- ✅ **Pedagogy whitepaper** - Research citations
+- ✅ **Child safety framework** - Full implementation details
+- ✅ **Privacy policy** - COPPA-compliant, kid-friendly
+- ✅ **Demo video script** - 2:30 walkthrough
+
+---
+
+## What's NOT Built Yet (Post-MVP Features)
+
+The sections below outline what we **did not build** in the 48-hour hackathon.
+
+---
+
 ## Phase 2: Foundation (Months 1-2)
 
 ### Database & Persistence
