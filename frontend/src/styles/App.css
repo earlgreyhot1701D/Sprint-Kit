@@ -432,6 +432,103 @@ body {
   font-weight: 600;
 }
 
+/* Timeline Assessment (Enhanced) */
+.timeline-assessment {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.timeline-assessment h4 {
+  font-size: 1.1rem;
+  color: var(--text);
+  margin-bottom: 15px;
+}
+
+.timeline-status {
+  padding: 15px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.timeline-status.good {
+  background: #dcfce7;
+  border-left: 4px solid #16a34a;
+  color: #166534;
+}
+
+.timeline-status.tight {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  color: #92400e;
+}
+
+.timeline-status.too_tight {
+  background: #fee2e2;
+  border-left: 4px solid #dc2626;
+  color: #991b1b;
+}
+
+.timeline-breakdown {
+  background: rgba(255, 255, 255, 0.6);
+  padding: 12px;
+  border-radius: 4px;
+  margin: 15px 0;
+  font-size: 0.95em;
+}
+
+.timeline-breakdown p {
+  margin: 6px 0;
+  line-height: 1.4;
+}
+
+.timeline-suggestion {
+  background: rgba(255, 255, 255, 0.4);
+  padding: 10px 12px;
+  border-radius: 4px;
+  margin-top: 12px;
+  font-size: 0.9em;
+}
+
+.timeline-suggestion p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.timeline-status-badge {
+  margin-top: 12px;
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Assignment Dropdown Enhancements */
+.assignment-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95em;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.assignment-select:hover {
+  border-color: #9ca3af;
+}
+
+.assignment-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.assignment-select option {
+  padding: 8px;
+}
+
 /* Insights & Badges */
 .insights-section {
   background: var(--bg);
