@@ -38,9 +38,9 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
     } else {
       setPromptsError('Could not load custom prompts. Using defaults.');
       const defaultPrompts = [
-        'What went well with your project?',
-        'What was hard or challenging?',
-        'What did you learn about yourself?'
+        'What did you learn about how to plan a project?',
+        'What was challenging about the planning process?',
+        'What did you learn about yourself as a planner?'
       ];
       // Fix #6: Dynamically create answers array based on prompts length
       setReflectionPrompts(defaultPrompts);
@@ -112,7 +112,7 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
 
   return (
     <div className="step-container">
-      <h2>🤔 What Did You Learn?</h2>
+      <h2>🤔 What Did You Learn About Planning?</h2>
 
       <p className="section-intro">
         Your project: <strong>{projectState.title}</strong>
@@ -120,8 +120,7 @@ export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
 
       <div className="hint-box">
         <p>
-          💡 Take a moment to think about your journey. Real learning happens when you
-          reflect on what went well, what was hard, and what you'd do differently next time.
+          💡 Take a moment to think about your planning process. What did you learn about breaking down projects, estimating time, and working with your team?
         </p>
       </div>
 
