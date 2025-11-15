@@ -188,36 +188,48 @@ function App() {
   // Show main flow after Intro
   return (
     <div className="App">
-      <header className="header">
+      <header className="header" role="banner">
         <h1>🚀 Sprint Kit</h1>
         <p>Plan your project. Learn real skills.</p>
 
         {/* Theme Toggle Button */}
-        <button onClick={toggleTheme} className="theme-toggle-btn" title="Toggle Light/Dark Mode">
+        <button
+          onClick={toggleTheme}
+          className="theme-toggle-btn"
+          aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-pressed={darkMode}
+          tabIndex={0}
+        >
           {darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
         </button>
 
         {/* Step indicator dots */}
-        <div className="step-dots">
+        <nav className="step-dots" aria-label="Project progress">
           {Array.from({ length: 7 }).map((_, i) => (
             <div
               key={i + 1}
               className={`dot ${step === i + 1 ? 'active' : ''} ${step > i + 1 ? 'completed' : ''}`}
-              title={`Step ${i + 1}`}
+              role="progressbar"
+              aria-valuenow={step}
+              aria-valuemin={1}
+              aria-valuemax={7}
+              aria-label={`Step ${i + 1}${step > i + 1 ? ' completed' : ''}`}
+              tabIndex={0}
             />
           ))}
-        </div>
+        </nav>
 
-        <div className="progress-bar">
+        <div className="progress-bar" role="progressbar" aria-valuenow={step} aria-valuemin={1} aria-valuemax={7}>
           <div
             className="progress-fill"
             style={{ width: `${(step / 7) * 100}%` }}
+            aria-label={`Progress: ${Math.round((step / 7) * 100)}% complete`}
           ></div>
         </div>
-        <p className="step-indicator">Step {step} of 7</p>
+        <p className="step-indicator" aria-live="polite">Step {step} of 7</p>
       </header>
 
-      <main className="main-content">
+      <main className="main-content" role="main" aria-label={`Step ${step} of 7`}>
         {renderStep()}
       </main>
 
