@@ -28,7 +28,13 @@ function App() {
     teamMembers: [],
     assignments: {},
     timeline: {},
-    reflection: {},
+    reflection: {
+      prompts: [],      // NEW: Custom reflection prompts
+      answers: [],      // NEW: Answers indexed to prompts
+      went_well: '',    // OLD: Keep for backward compatibility
+      was_hard: '',     // OLD: Keep for backward compatibility
+      differently: ''   // OLD: Keep for backward compatibility
+    },
     insights: [],
     badges: []
   });
@@ -98,7 +104,13 @@ function App() {
       teamMembers: [],
       assignments: {},
       timeline: {},
-      reflection: {},
+      reflection: {
+        prompts: [],
+        answers: [],
+        went_well: '',
+        was_hard: '',
+        differently: ''
+      },
       insights: [],
       badges: []
     });

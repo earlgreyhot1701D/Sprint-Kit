@@ -100,18 +100,32 @@ ${projectState.badges?.map((b) => `   ${b.emoji || '🏆'} ${b.name}: ${b.reason
           </p>
         </div>
 
-        <div className="summary-section">
-          <h4>Your Reflection</h4>
-          <p>
-            <strong>Went Well:</strong> {projectState.reflection?.went_well}
-          </p>
-          <p>
-            <strong>Was Hard:</strong> {projectState.reflection?.was_hard}
-          </p>
-          <p>
-            <strong>Would Do Differently:</strong> {projectState.reflection?.differently}
-          </p>
-        </div>
+        {projectState.reflection?.prompts?.length > 0 ? (
+          <div className="summary-section">
+            <h4>Your Reflection</h4>
+            <div className="qa-pairs">
+              {projectState.reflection.prompts.map((prompt, idx) => (
+                <div key={idx} className="qa-pair">
+                  <p><strong>Q: {prompt}</strong></p>
+                  <p className="answer">A: {projectState.reflection.answers[idx]}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="summary-section">
+            <h4>Your Reflection</h4>
+            <p>
+              <strong>Went Well:</strong> {projectState.reflection?.went_well}
+            </p>
+            <p>
+              <strong>Was Hard:</strong> {projectState.reflection?.was_hard}
+            </p>
+            <p>
+              <strong>Would Do Differently:</strong> {projectState.reflection?.differently}
+            </p>
+          </div>
+        )}
 
         {projectState.insights?.length > 0 && (
           <div className="summary-section">

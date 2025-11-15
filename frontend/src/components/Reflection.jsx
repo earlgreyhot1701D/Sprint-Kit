@@ -1,222 +1,179 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../utils/api';
+import { FORM_LIMITS, showSoftPrompt } from '../utils/formValidation';
 
 export default function Reflection({ projectState, onNext, onBack, onUpdate }) {
-  const [reflection, setReflection] = useState(projectState.reflection || {});
-  const [insights, setInsights] = useState(projectState.insights || []);
-  const [badges, setBadges] = useState(projectState.badges || []);
-  const [badgesRevealed, setBadgesRevealed] = useState(false);
-  const [insightsLoading, setInsightsLoading] = useState(false);
-  const [badgesLoading, setBadgesLoading] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [reflectionPrompts, setReflectionPrompts] = useState(
+    projectState.reflection?.prompts || []
+  );
+  const [reflectionAnswers, setReflectionAnswers] = useState(
+    projectState.reflection?.answers || []
+  );
+  const [loadingPrompts, setLoadingPrompts] = useState(false);
+  const [promptsError, setPromptsError] = useState(null);
 
-  const MIN_LENGTH = 20;
-
-  const generateInsights = async () => {
-    const allFilled =
-      (reflection.went_well?.length || 0) >= MIN_LENGTH &&
-      (reflection.was_hard?.length || 0) >= MIN_LENGTH &&
-      (reflection.differently?.length || 0) >= MIN_LENGTH;
-
-    if (!allFilled) {
-      alert('Please fill all reflection fields with at least 20 characters each');
-      return;
+  // Fetch adaptive reflection prompts on mount
+  useEffect(() => {
+    if (reflectionPrompts.length === 0) {
+      fetchAdaptivePrompts();
     }
+  }, []);
 
-    setInsightsLoading(true);
+  const fetchAdaptivePrompts = async () => {
+    setLoadingPrompts(true);
+    setPromptsError(null);
 
-    const result = await api.generateReflectionInsights(projectState.title, reflection);
-
-    if (result.success && result.data.insights) {
-      setInsights(result.data.insights);
-    } else {
-      setInsights([
-        'You thought about how you planned. That is metacognition!',
-        'You worked through challenges and kept going. That is persistence.',
-        'You reflected on your process, not just the result. That is how real learners think!'
-      ]);
-    }
-
-    setInsightsLoading(false);
-  };
-
-  const awardBadges = async () => {
-    setBadgesLoading(true);
-
-    // Calculate timeline accuracy (mock for now)
-    const timelineAccuracy = 1.0; // This would come from actual project data
-
-    const result = await api.awardBadges(
-      JSON.stringify(reflection),
-      projectState.tasksEdited || false,
-      timelineAccuracy
+    // Call with correct parameters: projectType, projectTitle, whatWentWell, whatWasHard, whatLearned
+    const result = await api.getReflectionPrompts(
+      projectState.project_type || 'other',
+      projectState.title || 'Project',
+      '', // what_went_well (student hasn't answered yet)
+      '', // what_was_hard (student hasn't answered yet)
+      ''  // what_learned (student hasn't answered yet)
     );
 
-    if (result.success && result.data.badges) {
-      setBadges(result.data.badges);
-      // Trigger animation after short delay
-      setTimeout(() => setBadgesRevealed(true), 200);
+    if (result.success && result.data.prompts && result.data.prompts.length > 0) {
+      setReflectionPrompts(result.data.prompts);
+      // Initialize empty answers for each prompt
+      setReflectionAnswers(new Array(result.data.prompts.length).fill(''));
+    } else {
+      setPromptsError('Could not load custom prompts. Using defaults.');
+      // Fallback to generic prompts
+      setReflectionPrompts([
+        'What went well with your project?',
+        'What was hard or challenging?',
+        'What did you learn about yourself?'
+      ]);
+      setReflectionAnswers(['', '', '']);
     }
 
-    setBadgesLoading(false);
+    setLoadingPrompts(false);
   };
 
-  const handleReflectionChange = (field, value) => {
-    setReflection({ ...reflection, [field]: value });
-    setErrors({ ...errors, [field]: null });
+  const handleAnswerChange = (idx, value) => {
+    const newAnswers = [...reflectionAnswers];
+    newAnswers[idx] = value;
+    setReflectionAnswers(newAnswers);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Validate all fields
-    const newErrors = {};
+    // Validate: all answers have minimum length
+    const minLength = FORM_LIMITS.reflection.min;
+    const allValid = reflectionAnswers.every(
+      (answer) => answer && answer.trim().length >= minLength
+    );
 
-    if (!reflection.went_well || reflection.went_well.length < MIN_LENGTH) {
-      newErrors.went_well = `At least ${MIN_LENGTH} characters`;
-    }
-
-    if (!reflection.was_hard || reflection.was_hard.length < MIN_LENGTH) {
-      newErrors.was_hard = `At least ${MIN_LENGTH} characters`;
-    }
-
-    if (!reflection.differently || reflection.differently.length < MIN_LENGTH) {
-      newErrors.differently = `At least ${MIN_LENGTH} characters`;
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    if (!allValid) {
+      alert(`Please answer all questions (at least ${minLength} characters each)`);
       return;
     }
 
-    // Award badges if not already done
-    if (badges.length === 0) {
-      awardBadges();
-    }
+    // Store both new format (prompts + answers) and old format for backward compatibility
+    const oldFormatReflection = {
+      went_well: reflectionAnswers[0] || '',
+      was_hard: reflectionAnswers[1] || '',
+      learned: reflectionAnswers[2] || ''
+    };
 
     onUpdate({
-      reflection,
-      insights,
-      badges
+      reflection: {
+        prompts: reflectionPrompts,        // NEW
+        answers: reflectionAnswers,        // NEW
+        ...oldFormatReflection             // OLD (for compatibility)
+      }
     });
 
     onNext();
   };
 
+  const limits = FORM_LIMITS.reflection;
+
   return (
     <div className="step-container">
-      <h2>🤔 Reflect on Your Plan</h2>
+      <h2>🤔 What Did You Learn?</h2>
 
       <p className="section-intro">
         Your project: <strong>{projectState.title}</strong>
       </p>
 
       <div className="hint-box">
-        <p>💡 Thinking about HOW you planned (not the finished project) helps you get better at planning.</p>
+        <p>
+          💡 Take a moment to think about your journey. Real learning happens when you
+          reflect on what went well, what was hard, and what you'd do differently next time.
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="form">
-        <div className="form-group">
-          <label htmlFor="went_well">What went well in your planning?</label>
-          <textarea
-            id="went_well"
-            placeholder="What did your team do right? What made the planning easier?"
-            value={reflection.went_well || ''}
-            onChange={(e) => handleReflectionChange('went_well', e.target.value)}
-            rows={3}
-            className={errors.went_well ? 'input-error' : ''}
-          />
-          <div className="char-count">
-            {(reflection.went_well || '').length}/{MIN_LENGTH} characters
+      {loadingPrompts && (
+        <div className="loading-state">
+          <div className="spinner">
+            <div className="spinner-circle"></div>
           </div>
-          {errors.went_well && <span className="error-text">{errors.went_well}</span>}
+          <p className="loading-text">⏳ Claude is personalizing your reflection questions...</p>
         </div>
+      )}
 
-        <div className="form-group">
-          <label htmlFor="was_hard">What was hard to plan?</label>
-          <textarea
-            id="was_hard"
-            placeholder="What made planning difficult? What did you struggle with?"
-            value={reflection.was_hard || ''}
-            onChange={(e) => handleReflectionChange('was_hard', e.target.value)}
-            rows={3}
-            className={errors.was_hard ? 'input-error' : ''}
-          />
-          <div className="char-count">
-            {(reflection.was_hard || '').length}/{MIN_LENGTH} characters
-          </div>
-          {errors.was_hard && <span className="error-text">{errors.was_hard}</span>}
+      {promptsError && (
+        <div className="warning-message">
+          <p>{promptsError}</p>
         </div>
+      )}
 
-        <div className="form-group">
-          <label htmlFor="differently">What would you do differently next time you plan?</label>
-          <textarea
-            id="differently"
-            placeholder="What will you change? What did you learn about planning?"
-            value={reflection.differently || ''}
-            onChange={(e) => handleReflectionChange('differently', e.target.value)}
-            rows={3}
-            className={errors.differently ? 'input-error' : ''}
-          />
-          <div className="char-count">
-            {(reflection.differently || '').length}/{MIN_LENGTH} characters
-          </div>
-          {errors.differently && <span className="error-text">{errors.differently}</span>}
-        </div>
+      {!loadingPrompts && (
+        <form onSubmit={handleSubmit} className="form">
+          <div className="reflection-fields">
+            {reflectionPrompts.map((prompt, idx) => (
+              <div key={idx} className="form-group reflection-group">
+                <label htmlFor={`reflection-${idx}`}>
+                  <strong>{prompt}</strong>
+                </label>
 
-        <div className="button-group">
-          <button
-            type="button"
-            onClick={generateInsights}
-            disabled={insightsLoading}
-            className="btn-secondary"
-          >
-            {insightsLoading ? 'Thinking...' : '✨ Generate Insights'}
-          </button>
+                <textarea
+                  id={`reflection-${idx}`}
+                  placeholder="Share your thoughts here..."
+                  value={reflectionAnswers[idx] || ''}
+                  onChange={(e) => handleAnswerChange(idx, e.target.value)}
+                  minLength={limits.min}
+                  maxLength={limits.max}
+                  required
+                  className="reflection-textarea"
+                />
 
-          {insights.length > 0 && (
-            <div className="insights-section">
-              <h3>💡 Your Learning Insights</h3>
-              <div className="insights-grid">
-                {insights.map((insight, idx) => (
-                  <div key={idx} className="insight-card">
-                    <div className="insight-emoji">💭</div>
-                    <p className="insight-text">{insight}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+                {/* Character counter with soft prompt */}
+                <div className="char-counter">
+                  {showSoftPrompt(reflectionAnswers[idx]?.length || 0, limits.soft) && (
+                    <small className="soft-prompt">
+                      💡 Tell us more! ({reflectionAnswers[idx]?.length || 0}/{limits.soft})
+                    </small>
+                  )}
 
-        {badges.length > 0 && (
-          <div className={`badges-section ${badgesRevealed ? 'revealed' : ''}`}>
-            <h3>🏆 Badges Earned</h3>
-            <div className="badges-list">
-              {badges.map((badge, idx) => (
-                <div key={idx} className="badge-card" style={{
-                  animation: badgesRevealed ? `slideIn 0.4s ease-out ${idx * 0.1}s both` : 'none'
-                }}>
-                  <div className="badge-icon">{badge.emoji || '🏆'}</div>
-                  <div className="badge-info">
-                    <strong>{badge.name}</strong>
-                    <p>{badge.reason}</p>
-                  </div>
+                  {(reflectionAnswers[idx]?.length || 0) > limits.soft && (
+                    <small className="char-count">
+                      {reflectionAnswers[idx]?.length || 0}/{limits.max}
+                    </small>
+                  )}
+
+                  {(reflectionAnswers[idx]?.length || 0) > limits.max && (
+                    <small className="char-warning">
+                      ✕ Max {limits.max} characters
+                    </small>
+                  )}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
-        )}
 
-        <div className="form-actions">
-          <button type="button" onClick={onBack} className="btn-secondary">
-            ← Back
-          </button>
-          <button type="submit" className="btn-primary">
-            See my project →
-          </button>
-        </div>
-      </form>
+          <div className="form-actions">
+            <button type="button" onClick={onBack} className="btn-secondary">
+              ← Back
+            </button>
+            <button type="submit" className="btn-primary">
+              See my project →
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }
