@@ -1,6 +1,7 @@
 """
 Sprint Kit Flask Application
 REST API for the project planning backend.
+UPDATED: reflection-insights endpoint now handles NEW format (prompts + answers).
 """
 
 import logging
@@ -384,8 +385,18 @@ def award_badges_endpoint():
 def get_reflection_insights():
     """
     Generate AI insights from student reflection.
+    Supports both NEW format (reflection.prompts + reflection.answers) and OLD format (went_well/was_hard/learned).
 
-    Request: {
+    Request (NEW format): {
+        "title": str (project title),
+        "project_type": str,
+        "reflection": {
+            "prompts": [list of prompts],
+            "answers": [list of answers]
+        }
+    }
+
+    Request (OLD format): {
         "title": str (project title),
         "project_type": str,
         "reflection": {
@@ -404,13 +415,30 @@ def get_reflection_insights():
         if not reflection:
             return jsonify({"error": "Reflection data missing"}), 400
 
-        reflection_data = {
-            "project_title": title,
-            "project_type": project_type,
-            "went_well": reflection.get('went_well', ''),
-            "was_hard": reflection.get('was_hard', ''),
-            "learned": reflection.get('learned', '')
-        }
+        # Handle NEW format: reflection.prompts + reflection.answers
+        if 'prompts' in reflection and 'answers' in reflection:
+            prompts = reflection.get('prompts', [])
+            answers = reflection.get('answers', [])
+
+            # Combine answers into a single reflection text for Claude analysis
+            combined_reflection = " ".join(answers) if answers else ""
+
+            reflection_data = {
+                "project_title": title,
+                "project_type": project_type,
+                "went_well": combined_reflection,  # Map to old keys for generate_reflection_insights
+                "was_hard": combined_reflection,
+                "learned": combined_reflection
+            }
+        # Handle OLD format: went_well/was_hard/learned
+        else:
+            reflection_data = {
+                "project_title": title,
+                "project_type": project_type,
+                "went_well": reflection.get('went_well', ''),
+                "was_hard": reflection.get('was_hard', ''),
+                "learned": reflection.get('learned', '')
+            }
 
         result = generate_reflection_insights(reflection_data)
 
