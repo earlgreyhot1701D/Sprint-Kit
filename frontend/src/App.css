@@ -1,4 +1,4 @@
-/* App.css - COMPLETE WITH BASE STYLES + POLISH ADDITIONS (Items 8 & 9) */
+/* App.css - COMPLETE WITH BASE STYLES + RADIO BUTTON STYLES */
 
 * {
   margin: 0;
@@ -376,216 +376,133 @@ body.intro-active {
 }
 
 @keyframes spin {
-  to {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
     transform: rotate(360deg);
   }
 }
 
 .loading-text {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   color: var(--text-light);
-  margin-bottom: 2rem;
-  font-weight: 500;
+  margin-top: 1rem;
 }
 
-/* Skeleton Placeholder */
-.skeleton-tasks {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
+/* Skeleton Loading State */
 .skeleton-task {
-  background: var(--bg-light);
-  border: 1px solid var(--border);
+  background: linear-gradient(
+    90deg,
+    var(--card-surface) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    var(--card-surface) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  height: 80px;
   border-radius: 8px;
-  padding: 1.5rem;
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-.skeleton-line {
-  height: 12px;
-  background: var(--bg-mid);
-  border-radius: 4px;
   margin-bottom: 1rem;
 }
 
-.skeleton-title {
-  width: 60%;
-  height: 16px;
-  margin-bottom: 0.75rem;
-}
-
-.skeleton-text {
-  width: 100%;
-  height: 12px;
-}
-
-.skeleton-text.short {
-  width: 40%;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
   }
-  50% {
-    opacity: 0.5;
+  100% {
+    background-position: -200% 0;
   }
 }
 
-/* ================================================================== */
-/* ITEM #9: POLISHED INSIGHTS (Reflection) */
-/* ================================================================== */
-
-.insights-section {
-  margin-top: 2rem;
-  padding: 2rem;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%);
-  border-radius: 12px;
-  border: 1px solid rgba(99, 102, 241, 0.2);
-}
-
-.insights-section h3 {
-  font-size: 1.4rem;
-  color: var(--primary);
-  margin-bottom: 1.5rem;
-  font-weight: 700;
-}
-
-.insights-grid {
+/* ITEM #9: INSIGHT CARDS (Reflection Component) */
+.insight-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
+  gap: 1rem;
+  margin-top: 2rem;
 }
 
 .insight-card {
-  background: var(--bg-light);
-  border: 2px solid var(--accent);
-  border-radius: 12px;
-  padding: 1.5rem;
-  display: flex;
-  gap: 1rem;
-  animation: slideUp 0.5s ease-out;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
-  transition: all 0.3s ease;
+  background: var(--card-surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  padding: 1.25rem;
+  animation: slideIn 0.4s ease;
 }
 
-.insight-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
-  border-color: var(--primary);
-}
-
-.insight-emoji {
-  font-size: 2rem;
-  min-width: 2.5rem;
-  text-align: center;
-}
-
-.insight-text {
-  font-size: 1.05rem;
-  line-height: 1.6;
-  color: var(--text);
-  margin: 0;
-  font-weight: 500;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ================================================================== */
-/* POLISHED BADGES (Enhanced) */
-/* ================================================================== */
-
-.badges-section {
-  margin-top: 2rem;
-  padding: 2rem;
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(234, 179, 8, 0.08) 100%);
-  border-radius: 12px;
-  border: 2px solid rgba(245, 158, 11, 0.3);
-}
-
-.badges-section h3 {
-  font-size: 1.4rem;
-  color: #d97706;
-  margin-bottom: 1.5rem;
+.insight-card h4 {
+  font-size: 1rem;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
   font-weight: 700;
 }
 
-.badges-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
+.insight-card p {
+  font-size: 0.95rem;
+  color: var(--text);
+  line-height: 1.5;
+  margin: 0;
 }
 
+/* Badge Card */
 .badge-card {
-  background: var(--bg-light);
-  border: 2px solid #fbbf24;
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+  border: 2px solid var(--accent);
   border-radius: 12px;
   padding: 1.5rem;
-  display: flex;
-  gap: 1rem;
-  box-shadow: 0 6px 16px rgba(251, 191, 36, 0.2);
-  transition: all 0.3s ease;
-}
-
-.badge-card:hover {
-  transform: scale(1.05) rotateY(5deg);
-  box-shadow: 0 12px 24px rgba(251, 191, 36, 0.35);
-}
-
-.badge-icon {
-  font-size: 2.5rem;
-  min-width: 3rem;
   text-align: center;
-  animation: bounce 1s ease-in-out infinite;
+  animation: popIn 0.5s ease;
 }
 
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
+.badge-card h3 {
+  font-size: 1.4rem;
+  color: var(--accent);
+  margin: 0.5rem 0;
+  font-weight: 700;
 }
 
-.badge-info {
-  flex: 1;
-}
-
-.badge-info strong {
-  display: block;
-  font-size: 1.1rem;
-  color: var(--text);
-  margin-bottom: 0.5rem;
-}
-
-.badge-info p {
+.badge-card p {
   font-size: 0.95rem;
   color: var(--text-light);
   margin: 0;
-  line-height: 1.5;
 }
 
-/* ================================================================== */
-/* ANIMATIONS */
-/* ================================================================== */
+/* Task Card */
+.task-card {
+  background: var(--card-surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
 
+.task-card h4 {
+  font-size: 1.1rem;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.task-card p {
+  font-size: 0.95rem;
+  color: var(--text);
+  margin: 0.25rem 0;
+}
+
+.task-meta {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+
+/* Animations */
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -593,131 +510,53 @@ body.intro-active {
   }
 }
 
-/* ================================================================== */
-/* MEDIA QUERIES */
-/* ================================================================== */
-
-@media (max-width: 768px) {
-  .insights-grid,
-  .badges-list {
-    grid-template-columns: 1fr;
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
   }
-
-  .insights-section,
-  .badges-section {
-    padding: 1.5rem;
-  }
-
-  .insights-section h3,
-  .badges-section h3 {
-    font-size: 1.2rem;
-  }
-
-  .insight-card,
-  .badge-card {
-    padding: 1.25rem;
-  }
-
-  .insight-emoji,
-  .badge-icon {
-    font-size: 1.5rem;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
-@media (max-width: 640px) {
-  .header h1 {
-    font-size: 2rem;
-  }
-
-  .main-content {
-    margin: 1.5rem auto;
-    padding: 0 1rem;
-  }
-
-  .step-container {
-    padding: 1.5rem;
-    border-radius: 12px;
-  }
-
-  .theme-toggle-btn {
-    top: 0.5rem;
-    right: 0.5rem;
-    padding: 0.4rem 0.8rem;
-    font-size: 0.8rem;
-  }
-
-  .form-actions {
-    flex-direction: column;
-  }
-
-  .btn-primary,
-  .btn-secondary {
-    width: 100%;
-  }
-
-  .loading-state {
-    padding: 2rem 1rem;
-  }
-
-  .skeleton-title {
-    width: 80%;
-  }
+/* Form Control Styles */
+.form-fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
 }
 
-/* ================================================================== */
-/* MISSING PROJECTCREATE STYLES */
-/* ================================================================== */
-
-.error-message {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-left: 4px solid var(--danger);
-  padding: 1rem;
-  border-radius: 6px;
-  color: var(--danger);
-  margin-bottom: 1.5rem;
-  font-weight: 500;
-}
-
-/* Team Input Styles (ProjectCreate) */
-.team-input {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.team-input input {
-  flex: 1;
+.form-select {
+  width: 100%;
   background: var(--card-surface);
   color: var(--text);
   border: 1px solid var(--border);
   padding: 0.75rem;
   border-radius: 6px;
   font-size: 1rem;
+  cursor: pointer;
   font-family: inherit;
-  transition: all 0.2s;
+  transition: border-color 0.3s;
 }
 
-.team-input input:focus {
+.form-select:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
   outline: none;
 }
 
+/* Button Variants */
 .btn-small {
   background: var(--primary);
   color: var(--text-dark);
   border: none;
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   border-radius: 6px;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-  font-size: 1rem;
+  transition: all 0.2s ease;
 }
 
 .btn-small:hover {
@@ -779,6 +618,17 @@ body.intro-active {
 
 /* Form Container */
 .form {
+  width: 100%;
+}
+
+/* Team Input Row */
+.team-input {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+}
+
+.team-input input {
   width: 100%;
 }
 
@@ -1032,7 +882,7 @@ select:focus {
 }
 
 /* Ensure form labels are always associated */
-label {
+label:not(.radio-label) {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 600;
@@ -1092,4 +942,25 @@ a[role="button"] {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* ================================================================== */
+/* RADIO BUTTON STYLES */
+/* ================================================================== */
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.radio-label input[type="radio"] {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.radio-label span {
+  line-height: 1.4;
 }

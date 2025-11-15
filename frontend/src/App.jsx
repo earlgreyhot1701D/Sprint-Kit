@@ -13,16 +13,19 @@ import Navigation from './components/Navigation';
 function App() {
   const [showIntro, setShowIntro] = useState(true);
   const [step, setStep] = useState(1);
-  const [darkMode, setDarkMode] = useState(false); // Default to Light Mode
+  const [darkMode, setDarkMode] = useState(false);
   const [projectState, setProjectState] = useState({
     step: 1,
     title: '',
     description: '',
+    team_size: '1',
+    experience_level: 'beginner',
+    project_type: 'other',
     brainstormIdeas: [],
     goals: {},
     tasks: [],
     tasksEdited: false,
-    teamMembers: [], // Will be set on the ProjectCreate screen (Step 1)
+    teamMembers: [],
     assignments: {},
     timeline: {},
     reflection: {},
@@ -30,37 +33,30 @@ function App() {
     badges: []
   });
 
-  // NEW: Theme Toggle Function
   const toggleTheme = () => {
     setDarkMode(prev => !prev);
   };
 
-  // EFFECT TO MANAGE GLOBAL BODY CLASS AND INTRO BACKGROUND
   useEffect(() => {
-    // 1. Apply Dark/Light Mode Class to body
     if (darkMode) {
       document.body.classList.add('dark-mode');
     } else {
       document.body.classList.remove('dark-mode');
     }
 
-    // 2. Manage Intro Background (White background only when Intro is active)
     if (showIntro) {
       document.body.classList.add('intro-active');
     } else {
       document.body.classList.remove('intro-active');
     }
 
-    // Cleanup function
     return () => {
       document.body.classList.remove('dark-mode');
       document.body.classList.remove('intro-active');
     };
-  }, [darkMode, showIntro]); // Dependencies
+  }, [darkMode, showIntro]);
 
-  // Handle Intro completion - NO TEAM MEMBERS ARE PASSED ANYMORE
   const handleIntroComplete = ({ skipSteps }) => {
-    // No team members to set, they will be set in ProjectCreate
     setShowIntro(false);
     setStep(1);
     window.scrollTo(0, 0);
@@ -85,7 +81,6 @@ function App() {
     setProjectState(prev => ({ ...prev, ...updates }));
   };
 
-  // Start over - go back to Intro
   const handleStartOver = () => {
     setShowIntro(true);
     setStep(1);
@@ -93,6 +88,9 @@ function App() {
       step: 1,
       title: '',
       description: '',
+      team_size: '1',
+      experience_level: 'beginner',
+      project_type: 'other',
       brainstormIdeas: [],
       goals: {},
       tasks: [],
@@ -172,7 +170,6 @@ function App() {
     }
   };
 
-  // Show Intro screen first
   if (showIntro) {
     return (
       <div className="App-Intro-Wrapper">
@@ -185,14 +182,12 @@ function App() {
     );
   }
 
-  // Show main flow after Intro
   return (
     <div className="App">
       <header className="header" role="banner">
         <h1>🚀 Sprint Kit</h1>
         <p>Plan your project. Learn real skills.</p>
 
-        {/* Theme Toggle Button */}
         <button
           onClick={toggleTheme}
           className="theme-toggle-btn"
@@ -203,7 +198,6 @@ function App() {
           {darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
         </button>
 
-        {/* Step indicator dots */}
         <nav className="step-dots" aria-label="Project progress">
           {Array.from({ length: 7 }).map((_, i) => (
             <div

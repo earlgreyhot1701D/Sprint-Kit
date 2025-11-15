@@ -6,6 +6,8 @@ export default function ProjectCreate({ projectState, onNext }) {
   const [description, setDescription] = useState(projectState.description || '');
   const [teamMembers, setTeamMembers] = useState(projectState.teamMembers || []);
   const [newMember, setNewMember] = useState('');
+  const [teamSize, setTeamSize] = useState(projectState.team_size || '1');
+  const [experienceLevel, setExperienceLevel] = useState(projectState.experience_level || 'beginner');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -66,7 +68,9 @@ export default function ProjectCreate({ projectState, onNext }) {
     onNext({
       title,
       description,
-      teamMembers: teamMembers.length > 0 ? teamMembers : ['You']
+      teamMembers: teamMembers.length > 0 ? teamMembers : ['You'],
+      team_size: teamSize,
+      experience_level: experienceLevel
     });
 
     setLoading(false);
@@ -115,6 +119,56 @@ export default function ProjectCreate({ projectState, onNext }) {
           {errors.description && (
             <span className="error-text">{errors.description}</span>
           )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="teamSize">How many people on your team?</label>
+          <select
+            id="teamSize"
+            value={teamSize}
+            onChange={(e) => setTeamSize(e.target.value)}
+            className="form-select"
+          >
+            <option value="1">Just me (1 person)</option>
+            <option value="2-3">2-3 people</option>
+            <option value="4+">4+ people</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label>How experienced is your team?</label>
+          <fieldset className="form-fieldset">
+            <label className="radio-label">
+              <input
+                type="radio"
+                name="experience"
+                value="beginner"
+                checked={experienceLevel === 'beginner'}
+                onChange={(e) => setExperienceLevel(e.target.value)}
+              />
+              <span>First time doing this kind of project</span>
+            </label>
+            <label className="radio-label">
+              <input
+                type="radio"
+                name="experience"
+                value="intermediate"
+                checked={experienceLevel === 'intermediate'}
+                onChange={(e) => setExperienceLevel(e.target.value)}
+              />
+              <span>We've done something similar before</span>
+            </label>
+            <label className="radio-label">
+              <input
+                type="radio"
+                name="experience"
+                value="advanced"
+                checked={experienceLevel === 'advanced'}
+                onChange={(e) => setExperienceLevel(e.target.value)}
+              />
+              <span>We're pretty experienced with this type of work</span>
+            </label>
+          </fieldset>
         </div>
 
         <div className="form-group">
