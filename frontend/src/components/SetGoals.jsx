@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { api } from '../utils/api';
 
 export default function SetGoals({ projectState, onNext, onBack }) {
   const [goal, setGoal] = useState(projectState.goals?.goal || '');
@@ -26,13 +25,9 @@ export default function SetGoals({ projectState, onNext, onBack }) {
       return;
     }
 
-    // Validate with backend
-    const validation = await api.validateSuccessCriteria(successCriteria);
-
-    if (!validation.success || !validation.data?.valid) {
-      setErrors({
-        successCriteria: validation.data?.error || 'Please be more specific'
-      });
+    // Just check minimum length, don't call backend
+    if (successCriteria.trim().length < 10) {
+      setErrors({ successCriteria: 'Tell us a bit more about what "done" looks like' });
       setLoading(false);
       return;
     }
