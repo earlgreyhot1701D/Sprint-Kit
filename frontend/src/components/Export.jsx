@@ -129,6 +129,26 @@ ${projectState.insights?.length > 0 ? `💡 KEY INSIGHTS:\n${projectState.insigh
           </p>
         </div>
 
+        {/* Badges Section - Prominent Achievement Display */}
+        <div className="summary-section badges-showcase">
+          <h4>🏆 Your Badges</h4>
+          {projectState.badges?.length > 0 ? (
+            <div className="badges-grid">
+              {projectState.badges.map((badge, idx) => (
+                <div key={idx} className="badge-card">
+                  <div className="badge-emoji">{badge.emoji || '🏆'}</div>
+                  <h3>{badge.name}</h3>
+                  <p>{badge.reason}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="no-badges-message">
+              Keep learning! Badges unlock as you develop real skills.
+            </p>
+          )}
+        </div>
+
         {projectState.reflection?.prompts?.length > 0 && projectState.reflection?.answers?.length > 0 ? (
           <div className="summary-section">
             <h4>Your Reflection</h4>
@@ -164,19 +184,6 @@ ${projectState.insights?.length > 0 ? `💡 KEY INSIGHTS:\n${projectState.insigh
                 <li key={idx}>{insight}</li>
               ))}
             </ul>
-          </div>
-        )}
-
-        {projectState.badges?.length > 0 && (
-          <div className="summary-section">
-            <h4>Badges Earned</h4>
-            <div className="badges-summary">
-              {projectState.badges.map((badge, idx) => (
-                <div key={idx} className="badge-summary">
-                  {badge.emoji || '🏆'} <strong>{badge.name}</strong>
-                </div>
-              ))}
-            </div>
           </div>
         )}
       </div>
