@@ -136,9 +136,19 @@ def validate_timeline(tasks: list, deadline_date: str) -> dict:
     }
     """
     try:
+        # Fix #9: Safely convert hours to float with error handling
         # Validate that all tasks have positive hours
         for task in tasks:
-            hours = float(task.get('hours', 0))
+            try:
+                hours = float(task.get('hours', 0))
+            except (ValueError, TypeError):
+                return {
+                    "status": "error",
+                    "total_hours": 0,
+                    "available_hours": 0,
+                    "message": "Invalid task hours. Please enter valid numbers.",
+                    "realistic": False
+                }
             if hours <= 0:
                 return {
                     "status": "error",
@@ -148,8 +158,14 @@ def validate_timeline(tasks: list, deadline_date: str) -> dict:
                     "realistic": False
                 }
 
-        # Calculate total work hours
-        total_hours = sum(float(task.get('hours', 0)) for task in tasks)
+        # Calculate total work hours with safe conversion
+        def safe_hours(task):
+            try:
+                return float(task.get('hours', 0))
+            except (ValueError, TypeError):
+                return 0
+
+        total_hours = sum(safe_hours(task) for task in tasks)
 
         # Parse deadline
         deadline = datetime.fromisoformat(deadline_date)

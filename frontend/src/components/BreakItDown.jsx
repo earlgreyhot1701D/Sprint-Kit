@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../utils/api';
 
 export default function BreakItDown({ projectState, onNext, onBack, onUpdate }) {
@@ -6,12 +6,15 @@ export default function BreakItDown({ projectState, onNext, onBack, onUpdate }) 
   const [loading, setLoading] = useState(!projectState.tasks || projectState.tasks.length === 0);
   const [tasksEdited, setTasksEdited] = useState(projectState.tasksEdited || false);
   const [error, setError] = useState(null);
+  const hasGeneratedRef = useRef(false);
 
   useEffect(() => {
-    if (!projectState.tasks || projectState.tasks.length === 0) {
+    // Fix #1: Use ref to prevent infinite loop and regeneration on back navigation
+    if (!hasGeneratedRef.current && (!projectState.tasks || projectState.tasks.length === 0)) {
+      hasGeneratedRef.current = true;
       generateTasks();
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const generateTasks = async () => {
     setLoading(true);
@@ -42,7 +45,8 @@ export default function BreakItDown({ projectState, onNext, onBack, onUpdate }) 
   };
 
   const handleAddTask = () => {
-    setTasks([...tasks, { task: '', hours: 1, difficulty: 'Medium' }]);
+    // Fix #5: Use 'name' property consistently instead of 'task'
+    setTasks([...tasks, { name: '', hours: 1, difficulty: 'Medium' }]);
     setTasksEdited(true);
   };
 
@@ -59,8 +63,9 @@ export default function BreakItDown({ projectState, onNext, onBack, onUpdate }) 
       return;
     }
 
+    // Fix #5: Standardize on 'name' property, maintain backward compatibility
     const formattedTasks = tasks.map((task) => ({
-      name: task.task || task.name || 'Unnamed Task',
+      name: task.name || task.task || 'Unnamed Task',
       hours: parseInt(task.hours) || 1,
       difficulty: task.difficulty || 'Medium',
       assigned_to: ''
@@ -133,8 +138,8 @@ export default function BreakItDown({ projectState, onNext, onBack, onUpdate }) 
                   <input
                     type="text"
                     placeholder="What needs to be done?"
-                    value={task.task || task.name || ''}
-                    onChange={(e) => handleTaskChange(index, 'task', e.target.value)}
+                    value={task.name || task.task || ''}
+                    onChange={(e) => handleTaskChange(index, 'name', e.target.value)}
                   />
                 </div>
 

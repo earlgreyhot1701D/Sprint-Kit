@@ -69,10 +69,11 @@ export default function ProjectCreate({ projectState, onNext }) {
 
       setLoading(false);
 
+      // Fix #12: Don't hardcode 'You' - pass actual teamMembers or empty array
       onNext({
         title,
         description,
-        teamMembers: teamMembers.length > 0 ? teamMembers : ['You'],
+        teamMembers: teamMembers.length > 0 ? teamMembers : [],
         team_size: teamSize,
         experience_level: experienceLevel,
         project_type: projectType

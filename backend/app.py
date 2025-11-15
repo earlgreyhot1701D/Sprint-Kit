@@ -420,8 +420,9 @@ def get_reflection_insights():
             prompts = reflection.get('prompts', [])
             answers = reflection.get('answers', [])
 
+            # Fix #10: Safely join answers, converting to strings and filtering None
             # Combine answers into a single reflection text for Claude analysis
-            combined_reflection = " ".join(answers) if answers else ""
+            combined_reflection = " ".join(str(a) for a in answers if a) if answers else ""
 
             reflection_data = {
                 "project_title": title,
