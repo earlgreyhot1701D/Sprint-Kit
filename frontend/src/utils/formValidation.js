@@ -4,12 +4,17 @@
  */
 
 export const FORM_LIMITS = {
+  title: { min: 3, max: 100 },
+  description: { min: 10, max: 500, soft: 50 },
+  brainstorm: { min: 20, max: 500, soft: 100 },
+  goal: { min: 10, max: 200 },
+  criteria: { min: 10, max: 200 },
+  reflection: { min: 20, soft: 100, max: 500 },  // soft = encouragement threshold
+  taskName: { min: 3, max: 100 },
+  // Legacy support (keeping old names for backwards compatibility)
   projectTitle: { min: 3, max: 100 },
   projectDescription: { min: 10, max: 500 },
-  goal: { min: 5, max: 200 },
-  successCriteria: { min: 5, max: 200 },
-  reflection: { min: 5, soft: 50, max: 500 },  // soft = encouragement threshold
-  taskName: { min: 3, max: 100 },
+  successCriteria: { min: 10, max: 200 },
 };
 
 /**

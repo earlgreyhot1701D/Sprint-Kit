@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../utils/api';
+import { FORM_LIMITS, showSoftPrompt } from '../utils/formValidation';
 
 export default function ProjectCreate({ projectState, onNext }) {
   const [title, setTitle] = useState(projectState.title || '');
@@ -35,20 +36,20 @@ export default function ProjectCreate({ projectState, onNext }) {
       return;
     }
 
-    if (title.trim().length < 3) {
-      setErrors({ title: 'Project name needs at least 3 letters' });
+    if (title.trim().length < FORM_LIMITS.title.min) {
+      setErrors({ title: `Project name needs at least ${FORM_LIMITS.title.min} characters` });
       setLoading(false);
       return;
     }
 
     if (!description.trim()) {
-      setErrors({ description: 'Tell us what you want to make or do (at least 15 characters)' });
+      setErrors({ description: `Tell us what you want to make or do (at least ${FORM_LIMITS.description.min} characters)` });
       setLoading(false);
       return;
     }
 
-    if (description.trim().length < 15) {
-      setErrors({ description: 'Give us more details about your project (at least 15 characters)' });
+    if (description.trim().length < FORM_LIMITS.description.min) {
+      setErrors({ description: `Give us more details about your project (at least ${FORM_LIMITS.description.min} characters)` });
       setLoading(false);
       return;
     }
@@ -99,31 +100,65 @@ export default function ProjectCreate({ projectState, onNext }) {
         )}
 
         <div className="form-group">
-          <label htmlFor="title">What's your project called?</label>
+          <label htmlFor="title">Project Name *</label>
+          <div className="field-requirement">
+            <span>3-100 characters. Make it specific: "Build a solar robot" not "Project"</span>
+          </div>
           <input
             id="title"
             type="text"
-            placeholder="Build a game, Plan a fundraiser, Make a video..."
+            placeholder="e.g., Build a solar robot, Write a research paper, Plan a fundraiser"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            minLength={FORM_LIMITS.title.min}
+            maxLength={FORM_LIMITS.title.max}
             className={errors.title ? 'input-error' : ''}
+            required
           />
-          <div className="char-count">{title.length} characters</div>
+          <div className="char-counter">
+            {title.length > 0 && (
+              <small>{title.length}/{FORM_LIMITS.title.max} characters</small>
+            )}
+            {title.length > 0 && title.length < FORM_LIMITS.title.min && (
+              <small className="requirement-warning">⚠ Need at least {FORM_LIMITS.title.min} characters</small>
+            )}
+            {title.length >= FORM_LIMITS.title.min && (
+              <small className="requirement-success">✓ Project name looks good</small>
+            )}
+          </div>
           {errors.title && <span className="error-text">{errors.title}</span>}
         </div>
 
         <div className="form-group">
-          <label htmlFor="description">Tell us about it. What do you want to make or do?</label>
+          <label htmlFor="description">Tell us about your project *</label>
+          <div className="field-requirement">
+            <span>10-500 characters. Explain WHAT you're making and WHY.</span>
+            <span className="example">Example: "We want to build a solar-powered robot that collects trash from the school courtyard. We have 3 weeks."</span>
+          </div>
           <textarea
             id="description"
-            placeholder="We want to build a robot that picks up tennis balls..."
+            placeholder="What are you building? What's your goal? Who's involved?"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
+            minLength={FORM_LIMITS.description.min}
+            maxLength={FORM_LIMITS.description.max}
             className={errors.description ? 'input-error' : ''}
+            required
           />
-          <div className="char-count">
-            {description.length} characters (need at least 15)
+          <div className="char-counter">
+            {description.length > 0 && (
+              <small>{description.length}/{FORM_LIMITS.description.max} characters</small>
+            )}
+            {description.length > 0 && description.length < FORM_LIMITS.description.min && (
+              <small className="requirement-warning">⚠ Need at least {FORM_LIMITS.description.min} characters</small>
+            )}
+            {showSoftPrompt(description.length, FORM_LIMITS.description.soft) && (
+              <small className="soft-prompt">💡 Tell us more details ({description.length}/{FORM_LIMITS.description.soft} recommended)</small>
+            )}
+            {description.length >= FORM_LIMITS.description.soft && (
+              <small className="requirement-success">✓ Good description</small>
+            )}
           </div>
           {errors.description && (
             <span className="error-text">{errors.description}</span>
