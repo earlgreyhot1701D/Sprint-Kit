@@ -142,7 +142,8 @@ def estimate_timeline_with_context(
         "realistic": bool,
         "status": "good/tight/too_tight",
         "message": str,
-        "suggestion": str or None
+        "suggestion": str or None,
+        "explanation": str (HOW we calculated this)
     }
     """
     response = call_claude_safely(
@@ -161,11 +162,22 @@ def estimate_timeline_with_context(
             "realistic": False,
             "status": "unknown",
             "message": "Could not estimate timeline",
-            "suggestion": None
+            "suggestion": None,
+            "explanation": "Unable to calculate at this time."
         }
 
     try:
         result = parse_json_response(response["data"])
+
+        # Add transparency explanation
+        total = result.get("total_hours", 0)
+        available = result.get("available_hours", 0)
+        exp_level = experience_level.capitalize()
+        hours_per_day = available // deadline_days if deadline_days > 0 else 0
+
+        explanation = f"You have {deadline_days} days. For {exp_level.lower()}s, that's {hours_per_day}h per day = {available}h total. Your tasks = {total}h."
+
+        result["explanation"] = explanation
         return result
     except Exception as e:
         logger.error(f"Failed to parse timeline: {e}")
@@ -175,7 +187,8 @@ def estimate_timeline_with_context(
             "realistic": False,
             "status": "unknown",
             "message": "Could not estimate timeline",
-            "suggestion": None
+            "suggestion": None,
+            "explanation": "Unable to calculate at this time."
         }
 
 

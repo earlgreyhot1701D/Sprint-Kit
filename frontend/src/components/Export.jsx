@@ -17,6 +17,18 @@ export default function Export({ projectState, onBack, onStartOver }) {
   };
 
   const handleCopyToClipboard = () => {
+    // Build reflection text based on new or old format
+    let reflectionText = '';
+    if (projectState.reflection?.prompts?.length > 0) {
+      // New format: show Q+A pairs
+      reflectionText = projectState.reflection.prompts
+        .map((prompt, idx) => `Q: ${prompt}\nA: ${projectState.reflection.answers[idx]}`)
+        .join('\n\n');
+    } else {
+      // Old format: fallback
+      reflectionText = `Went Well:\n${projectState.reflection?.went_well}\n\nWas Hard:\n${projectState.reflection?.was_hard}\n\nWould Do Differently:\n${projectState.reflection?.differently}`;
+    }
+
     const text = `
 ╔════════════════════════════════════════════════════════════════════╗
 ║                        PROJECT PLAN SUMMARY                       ║
@@ -41,14 +53,7 @@ ${projectState.tasks?.map((t) => `  • ${t.name} (${t.hours}h, ${t.difficulty})
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🤔 REFLECTION:
-   What Went Well:
-   ${projectState.reflection?.went_well}
-
-   What Was Hard:
-   ${projectState.reflection?.was_hard}
-
-   What I'd Do Differently:
-   ${projectState.reflection?.differently}
+${reflectionText}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

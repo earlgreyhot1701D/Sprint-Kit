@@ -3,17 +3,12 @@ import { api } from '../utils/api';
 
 export default function AssignRoles({ projectState, onNext, onBack, onUpdate }) {
   const [deadline, setDeadline] = useState(
-    projectState.timeline?.deadline || getDefaultDeadline()
+    projectState.timeline?.deadline || ''
   );
   const [assignments, setAssignments] = useState(projectState.assignments || {});
   const [timelineResult, setTimelineResult] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  function getDefaultDeadline() {
-    const date = new Date();
-    date.setDate(date.getDate() + 7);
-    return date.toISOString().split('T')[0];
-  }
+  const [dateSelected, setDateSelected] = useState(!!projectState.timeline?.deadline);
 
   function calculateDeadlineDays(deadlineDate) {
     const today = new Date();
@@ -23,8 +18,11 @@ export default function AssignRoles({ projectState, onNext, onBack, onUpdate }) 
     return Math.max(1, diffDays); // At least 1 day
   }
 
+  // Only validate timeline when user picks a date
   useEffect(() => {
-    validateTimeline();
+    if (deadline && dateSelected) {
+      validateTimeline();
+    }
   }, [deadline]);
 
   const validateTimeline = async () => {
@@ -113,7 +111,10 @@ export default function AssignRoles({ projectState, onNext, onBack, onUpdate }) 
             id="deadline"
             type="date"
             value={deadline}
-            onChange={(e) => setDeadline(e.target.value)}
+            onChange={(e) => {
+              setDeadline(e.target.value);
+              setDateSelected(true);
+            }}
           />
         </div>
 
