@@ -945,7 +945,7 @@ a[role="button"] {
 }
 
 /* ================================================================== */
-/* RADIO BUTTON STYLES */
+/* RADIO BUTTON STYLES (FIXED) */
 /* ================================================================== */
 
 .radio-label {
@@ -963,4 +963,6 @@ a[role="button"] {
 
 .radio-label span {
   line-height: 1.4;
+  /* FIX: Allows the text to take up available space and wrap correctly */
+  flex: 1;
 }
