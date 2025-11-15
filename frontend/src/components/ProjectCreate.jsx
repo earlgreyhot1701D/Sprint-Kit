@@ -27,13 +27,25 @@ export default function ProjectCreate({ projectState, onNext }) {
 
     // Validate on client first
     if (!title.trim()) {
-      setErrors({ title: 'Project name is required' });
+      setErrors({ title: 'Give your project a name' });
+      setLoading(false);
+      return;
+    }
+
+    if (title.trim().length < 3) {
+      setErrors({ title: 'Project name needs at least 3 letters' });
       setLoading(false);
       return;
     }
 
     if (!description.trim()) {
-      setErrors({ description: 'Project description is required' });
+      setErrors({ description: 'Tell us what you want to make or do (at least 15 characters)' });
+      setLoading(false);
+      return;
+    }
+
+    if (description.trim().length < 15) {
+      setErrors({ description: 'Give us more details about your project (at least 15 characters)' });
       setLoading(false);
       return;
     }
@@ -42,7 +54,7 @@ export default function ProjectCreate({ projectState, onNext }) {
     const validation = await api.validateProject(title, description);
 
     if (!validation.success || !validation.data.valid) {
-      setErrors({ general: validation.data.error || 'Project validation failed' });
+      setErrors({ general: validation.data.error || 'Hmm, that project description is too vague. Tell us more!' });
       setLoading(false);
       return;
     }
@@ -64,6 +76,10 @@ export default function ProjectCreate({ projectState, onNext }) {
     <div className="step-container">
       <h2>🎯 Let's Start a Project</h2>
 
+      <div className="hint-box">
+        <p>💡 Tell us about a real project your team is working on. A school project, team assignment, creative goal - anything!</p>
+      </div>
+
       <form onSubmit={handleSubmit} className="form">
         {errors.general && (
           <div className="error-message">{errors.general}</div>
@@ -79,6 +95,7 @@ export default function ProjectCreate({ projectState, onNext }) {
             onChange={(e) => setTitle(e.target.value)}
             className={errors.title ? 'input-error' : ''}
           />
+          <div className="char-count">{title.length} characters</div>
           {errors.title && <span className="error-text">{errors.title}</span>}
         </div>
 
@@ -92,6 +109,9 @@ export default function ProjectCreate({ projectState, onNext }) {
             rows={4}
             className={errors.description ? 'input-error' : ''}
           />
+          <div className="char-count">
+            {description.length} characters (need at least 15)
+          </div>
           {errors.description && (
             <span className="error-text">{errors.description}</span>
           )}
