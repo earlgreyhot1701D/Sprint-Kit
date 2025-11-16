@@ -617,4 +617,4 @@ MIT License - Use freely in educational and non-commercial contexts.
 
 **Built for the CS Girlies "Make Learning Cool Again" hackathon (Nov 14-16, 2025).**
 
-See you at the finish line. ðŸš€
+See you at the finish line.
