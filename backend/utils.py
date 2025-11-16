@@ -79,11 +79,14 @@ def generate_tasks_with_context(
     project_description: str,
     project_type: str,
     experience_level: str,
-    team_size: str
+    team_size: str,
+    goal: str = '',
+    brainstorm_ideas: str = ''
 ) -> dict:
     """
     Generate type-specific tasks scaled by experience level and team size.
     Uses methodology guidance to ensure tasks match project type.
+    Now includes student's goal and brainstorm ideas for more specific task generation.
 
     Returns: {
         "tasks": list of task dicts,
@@ -101,7 +104,9 @@ def generate_tasks_with_context(
         project_type=project_type,
         experience_level=experience_level,
         team_size=team_size,
-        methodology_guidance=methodology_guidance
+        methodology_guidance=methodology_guidance,
+        goal=goal,
+        brainstorm_ideas=brainstorm_ideas
     )
 
     if not response["success"]:

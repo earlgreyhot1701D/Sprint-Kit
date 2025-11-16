@@ -136,7 +136,9 @@ def break_down_tasks():
         "project_description": str,
         "project_type": str (from Layer 1),
         "experience_level": str (beginner/intermediate/advanced),
-        "team_size": str (1/2-3/4+)
+        "team_size": str (1/2-3/4+),
+        "goal": str (student's stated goal),
+        "brainstorm_ideas": str (student's brainstorm ideas)
     }
 
     Returns: {
@@ -153,6 +155,8 @@ def break_down_tasks():
         project_type = data.get('project_type', 'other')
         experience_level = data.get('experience_level', 'beginner')
         team_size = data.get('team_size', '1')
+        goal = data.get('goal', '')
+        brainstorm_ideas = data.get('brainstorm_ideas', '')
 
         if not title or not description:
             return jsonify({
@@ -166,7 +170,9 @@ def break_down_tasks():
             project_description=description,
             project_type=project_type,
             experience_level=experience_level,
-            team_size=team_size
+            team_size=team_size,
+            goal=goal,
+            brainstorm_ideas=brainstorm_ideas
         )
 
         return jsonify({

@@ -109,21 +109,33 @@ Project Type: {project_type}
 Team Experience Level: {experience_level}
 Team Size: {team_size}
 
+Student's Goal: {goal}
+
+Student's Brainstorm Ideas:
+{brainstorm_ideas}
+
 METHODOLOGY GUIDANCE (Tailor tasks to project type):
 {methodology_guidance}
+
+CRITICAL: Use the student's goal and brainstorm ideas as the foundation for your tasks.
+- The tasks you generate should directly help them achieve THEIR stated goal
+- Build upon THEIR brainstorm ideas - don't ignore what they said they want to do
+- If they mentioned specific steps/ideas in their brainstorm, incorporate those into the tasks
+- Make tasks SPECIFIC to their project, not generic templates
 
 Generate 5-8 concrete tasks. Each task should:
 - Be doable in 1-3 days
 - Have a clear outcome (students can see when it's done)
-- Be specific and actionable
+- Be specific and actionable (use concrete nouns from their project)
 - Match the project type (e.g., hardware tasks mention materials/tools, papers mention research/drafting)
 - Scale to team experience (beginners: smaller tasks; experienced: larger)
 - Account for team size (1 person: can do everything; 4+ people: parallel work possible)
+- Reference their specific goal and ideas (e.g., "Research Constitution sources" not "Do research")
 
 Format ONLY as JSON:
 [
-  {{"task": "Task name here", "hours": X, "difficulty": "Easy/Medium/Hard"}},
-  {{"task": "Task name here", "hours": Y, "difficulty": "Easy/Medium/Hard"}}
+  {{"task": "Specific task name based on their ideas", "hours": X, "difficulty": "Easy/Medium/Hard"}},
+  {{"task": "Another specific task name", "hours": Y, "difficulty": "Easy/Medium/Hard"}}
 ]
 
 If you cannot generate tasks, respond ONLY with:

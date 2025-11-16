@@ -20,12 +20,18 @@ export default function BreakItDown({ projectState, onNext, onBack, onUpdate }) 
     setLoading(true);
     setError(null);
 
+    // Extract goal and brainstorm ideas from projectState
+    const goal = projectState.goals?.goal || projectState.goal || '';
+    const brainstormIdeas = projectState.brainstorm || projectState.brainstorm_ideas || '';
+
     const result = await api.breakDownTasks(
       projectState.title,
       projectState.description,
       projectState.project_type || 'other',
       projectState.experience_level || 'beginner',
-      projectState.team_size || '1'
+      projectState.team_size || '1',
+      goal,
+      brainstormIdeas
     );
 
     if (result.success && result.data.tasks) {
