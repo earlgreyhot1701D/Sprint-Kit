@@ -736,6 +736,48 @@ body.intro-active {
   font-weight: 600;
 }
 
+/* Enhanced Badge Display - Hero Section */
+.badges-showcase {
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%);
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 2rem 0;
+}
+
+.badges-showcase h4 {
+  font-size: 1.6rem;
+  color: var(--accent);
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-weight: 800;
+}
+
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.badge-emoji {
+  font-size: 3.5rem;
+  margin-bottom: 0.75rem;
+  animation: popIn 0.6s ease;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}
+
+.no-badges-message {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--text-light);
+  font-style: italic;
+  padding: 2rem;
+  background: var(--card-surface);
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
 .download-section {
   background: linear-gradient(135deg, rgba(79, 70, 229, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%);
   border: 1px solid rgba(79, 70, 229, 0.2);
@@ -839,6 +881,23 @@ body.intro-active {
   .badge-summary {
     padding: 0.5rem 0.75rem;
     font-size: 0.85rem;
+  }
+
+  .badges-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .badges-showcase {
+    padding: 1.5rem;
+  }
+
+  .badges-showcase h4 {
+    font-size: 1.3rem;
+  }
+
+  .badge-emoji {
+    font-size: 2.8rem;
   }
 }
 
