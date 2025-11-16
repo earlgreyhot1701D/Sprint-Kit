@@ -64,7 +64,7 @@ export const api = {
   },
 
   // ===== LAYER 2: TASK BREAKDOWN (Context-Aware) =====
-  breakDownTasks: async (projectTitle, projectDescription, projectType, experienceLevel, teamSize) => {
+  breakDownTasks: async (projectTitle, projectDescription, projectType, experienceLevel, teamSize, goal = '', brainstormIdeas = '') => {
     try {
       const response = await fetch(`${API_BASE}/api/projects/break-down`, {
         method: 'POST',
@@ -74,7 +74,9 @@ export const api = {
           project_description: projectDescription,
           project_type: projectType || 'other',
           experience_level: experienceLevel || 'beginner',
-          team_size: teamSize || '1'
+          team_size: teamSize || '1',
+          goal: goal || '',
+          brainstorm_ideas: brainstormIdeas || ''
         })
       });
       const data = await response.json();
