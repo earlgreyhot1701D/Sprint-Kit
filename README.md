@@ -2,6 +2,40 @@
 
 **AI-powered project planner built for middle school students (grades 6-8) teaching real project management skills through the lens of Gold Standard PBL.**
 
+---
+# Sprint Kit: Project Story
+
+## The Problem
+
+Middle schoolers need real project management skills—decomposition, estimation, collaboration, reflection—to succeed not just in school, but throughout their lives. Yet they're rarely taught these skills explicitly. Most project planning tools fail them in two ways:
+
+1. **Adult jargon barrier**: Tools use terminology like "deliverables," "stakeholders," and "synergy" that alienates 12-14 year olds
+2. **False choice**: Either tools infantilize students OR throw complex concepts at them with no scaffolding
+
+Result: Students don't learn project planning. They just fill out forms.
+
+And critically, ages 12-15 are the *optimal window* for this learning—metacognitive ability (the ability to think about their own thinking) grows fastest during middle school. If we don't teach these skills now, they're harder to develop later.
+
+## How I'm Solving It
+
+Sprint Kit uses **AI scaffolding** to bridge this gap. Instead of generic task templates, Claude detects each student's project type (hardware, software, creative, research, event) and generates methodology-specific guidance. Students see *what good looks like*, then practice by editing tasks, assigning roles, and reflecting on what they learned.
+
+The key insight: **AI as teacher's aide, not replacement**. Claude models thinking; students do the learning.
+
+---
+
+## Inspiration
+
+I didn't learn real project management skills until college. Decomposition, estimation, collaboration, reflection—nobody taught me these in middle school. I had to figure them out the hard way through failed projects and trial-and-error.
+
+Now I work in government—at the Superior Court in public service—and I see the same problem everywhere: people struggle with project planning because they never learned it when their brains were optimized to learn it. Ages 12-15 is when metacognitive ability (thinking about your own thinking) grows fastest, but that's exactly when schools *don't* teach these skills explicitly.
+
+I realized: why wait until college or a career in public service to learn this? Why not teach it when kids can actually absorb it deeply? These skills matter whether you're running a court system or running a school project.
+
+That's when I decided to build Sprint Kit—a tool that teaches project management at the optimal moment, in language kids understand, with AI scaffolding instead of corporate jargon.
+
+---
+
 ## What It Does
 
 Sprint Kit guides students through a 7-step project planning journey:
@@ -24,6 +58,17 @@ Sprint Kit is grounded in the **Gold Standard Project-Based Learning (PBL)** fra
 - **⏰ Estimation** ("Time It Takes") - Realistic time planning
 - **👥 Collaboration** ("Team Up") - Working effectively with others
 - **🤔 Reflection** ("What I Learned") - Metacognitive thinking about learning
+
+Research & Pedagogy
+This project is grounded in rigorous educational research, not guessing.
+Sprint Kit aligns with Gold Standard Project-Based Learning (validated through 30+ years of research by the Buck Institute for Education) and targets the critical developmental window (ages 12-15) when metacognitive ability undergoes rapid growth.
+See the full pedagogy whitepaper: docs/PEDAGOGY_WHITEPAPER.md
+Key research backing:
+
+Metacognitive ability growth peaks 12-15 (Price-Mitchell, 2015)
+Project-based learning: 30+ years evidence (Larmer & Mergendoller, 2015)
+Gamification effect size 0.822 for learning (Huang et al., 2019)
+Authentic badges > generic points (Sailer & Homner, 2020)
 
 ### Why Ages 12-15?
 
@@ -305,11 +350,11 @@ Return to Frontend (always safe, always works)
 - ✅ Session data only (deleted on browser close)
 
 ### Safety Features
-✅ **Prompt Injection Protection** - Blocks attempts to jailbreak Claude  
-✅ **Response Validation** - Checks for PII exposure  
-✅ **Out-of-Scope Refusal** - Won't help with homework/cheating  
-✅ **Safe Error Messages** - Never exposes system details to users  
-✅ **Fallback Behavior** - App works even if Claude fails  
+✅ **Prompt Injection Protection** - Blocks attempts to jailbreak Claude
+✅ **Response Validation** - Checks for PII exposure
+✅ **Out-of-Scope Refusal** - Won't help with homework/cheating
+✅ **Safe Error Messages** - Never exposes system details to users
+✅ **Fallback Behavior** - App works even if Claude fails
 ✅ **Logging & Monitoring** - Tracks safety events (no user data)
 
 ### For Parents & Educators
@@ -392,14 +437,14 @@ Sprint Kit is designed to excel across all 5 judging dimensions:
 ## Key Features
 
 ### MVP (Included)
-✅ Complete 7-step flow  
-✅ Claude AI task breakdown  
-✅ Timeline validation  
-✅ Reflection with AI insights  
-✅ Authentic badges  
-✅ PDF export + text export  
-✅ Safety guardrails  
-✅ Comprehensive tests  
+✅ Complete 7-step flow
+✅ Claude AI task breakdown
+✅ Timeline validation
+✅ Reflection with AI insights
+✅ Authentic badges
+✅ PDF export + text export
+✅ Safety guardrails
+✅ Comprehensive tests
 
 ### Post-MVP (Roadmap)
 📋 Database persistence + user auth
@@ -527,8 +572,8 @@ FLASK_ENV=development
 
 ### Common Issues
 
-**Claude API fails**: Check API key, rate limiting. App falls back to template tasks.  
-**Frontend can't reach backend**: Ensure both running on localhost:3000 and localhost:5000.  
+**Claude API fails**: Check API key, rate limiting. App falls back to template tasks.
+**Frontend can't reach backend**: Ensure both running on localhost:3000 and localhost:5000.
 **Tests fail**: Run `pip install -r requirements.txt` first; ensure Python 3.8+.
 
 ## Pedagogy Reference
@@ -553,8 +598,8 @@ FLASK_ENV=development
 
 ### Standards Alignment
 
-✅ ISTE Standards for Students (critical thinking, communication, project management)  
-✅ State standards for project-based learning  
+✅ ISTE Standards for Students (critical thinking, communication, project management)
+✅ State standards for project-based learning
 ✅ 21st century skills (collaboration, problem-solving, reflection)
 
 ## License
@@ -563,7 +608,7 @@ MIT License - Use freely in educational and non-commercial contexts.
 
 ## Support
 
-**Questions?** Contact: safety@sprintkit.example.com  
+**Questions?** Contact: safety@sprintkit.example.com
 **Report a bug?** Create an issue in the GitHub repo.
 
 ---
