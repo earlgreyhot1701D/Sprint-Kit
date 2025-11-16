@@ -49,7 +49,7 @@ export default function Export({ projectState, onBack, onStartOver }) {
 
 🎯 GOAL: ${projectState.goals?.goal}
 
-👥 TEAM: ${projectState.teamMembers?.join(', ')}
+👥 TEAM: ${projectState.teamMembers?.length > 0 ? projectState.teamMembers.join(', ') : 'Solo project'}
 
 ───────────────────────────────────────────────────────────────────────────
 
@@ -93,6 +93,66 @@ ${projectState.insights?.length > 0 ? `💡 KEY INSIGHTS:\n${projectState.insigh
     return hints[projectType] || hints.other;
   };
 
+  // Generate personalized celebration message based on actual project details
+  const generateCelebrationMessage = () => {
+    const projectType = projectState.project_type || 'project';
+    const taskCount = projectState.tasks?.length || 0;
+    const totalHours = projectState.tasks?.reduce((sum, t) => sum + (parseInt(t.hours) || 0), 0) || 0;
+    const teamSize = projectState.teamMembers?.length || 0;
+    const teamNames = projectState.teamMembers?.join(', ') || '';
+
+    // Build team description
+    let teamDesc = '';
+    if (teamSize === 0) {
+      teamDesc = 'solo';
+    } else if (teamSize === 1) {
+      teamDesc = `with ${teamNames}`;
+    } else {
+      teamDesc = `with your team (${teamNames})`;
+    }
+
+    // Build task description
+    let taskDesc = '';
+    if (taskCount > 0) {
+      taskDesc = `, broke it into ${taskCount} concrete tasks`;
+    }
+
+    // Build hours description
+    let hoursDesc = '';
+    if (totalHours > 0) {
+      hoursDesc = `, estimated ${totalHours} hours of work`;
+    }
+
+    // Extract key learnings from reflection
+    const reflectionAnswers = projectState.reflection?.answers || [];
+    const combinedReflection = reflectionAnswers.join(' ').toLowerCase();
+
+    const learnings = [];
+    if (combinedReflection.includes('break') || combinedReflection.includes('task') || combinedReflection.includes('step')) {
+      learnings.push('breaking goals into steps');
+    }
+    if (combinedReflection.includes('plan') || combinedReflection.includes('time') || combinedReflection.includes('estimate')) {
+      learnings.push('planning ahead');
+    }
+    if (combinedReflection.includes('team') || combinedReflection.includes('together') || combinedReflection.includes('help')) {
+      learnings.push('working with others');
+    }
+    if (combinedReflection.includes('learn') || combinedReflection.includes('better') || combinedReflection.includes('improve')) {
+      learnings.push('growing your skills');
+    }
+
+    // Build learnings description
+    let learningsDesc = '';
+    if (learnings.length > 0) {
+      learningsDesc = `, and reflected on ${learnings.slice(0, 2).join(' and ')}`;
+    }
+
+    // Construct the full message
+    const message = `You planned a ${projectType} project ${teamDesc}${taskDesc}${hoursDesc}${learningsDesc}. That's real project planning!`;
+
+    return message;
+  };
+
   return (
     <div className="step-container">
       <h2>📊 Your Project Plan</h2>
@@ -107,7 +167,11 @@ ${projectState.insights?.length > 0 ? `💡 KEY INSIGHTS:\n${projectState.insigh
 
         <div className="summary-section">
           <h4>Team</h4>
-          <p>{projectState.teamMembers?.join(', ')}</p>
+          <p>
+            {projectState.teamMembers?.length > 0
+              ? projectState.teamMembers.join(', ')
+              : 'Solo project'}
+          </p>
         </div>
 
         <div className="summary-section">
@@ -172,8 +236,12 @@ ${projectState.insights?.length > 0 ? `💡 KEY INSIGHTS:\n${projectState.insigh
             <h4>Badges Earned</h4>
             <div className="badges-summary">
               {projectState.badges.map((badge, idx) => (
-                <div key={idx} className="badge-summary">
-                  {badge.emoji || '🏆'} <strong>{badge.name}</strong>
+                <div key={idx} className="badge-card">
+                  <div className="badge-emoji">{badge.emoji || '🏆'}</div>
+                  <div className="badge-details">
+                    <strong>{badge.name}</strong>
+                    <p className="badge-reason">{badge.reason}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -202,10 +270,7 @@ ${projectState.insights?.length > 0 ? `💡 KEY INSIGHTS:\n${projectState.insigh
 
       <div className="completion-message">
         <h3>🎉 You Did It!</h3>
-        <p>
-          You planned a real project, learned about breaking it down, estimating time, working with a team,
-          and thinking about your process. That's what real learners do!
-        </p>
+        <p>{generateCelebrationMessage()}</p>
       </div>
 
       <div className="form-actions">

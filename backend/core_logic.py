@@ -288,7 +288,7 @@ def award_badges(reflection_prompts: list = None, reflection_answers: list = Non
                 badges.append({
                     "name": "I Can Break It Down",
                     "reason": "You learned how to split big goals into manageable tasks.",
-                    "emoji": "ðŸ§©"
+                    "emoji": "🧩"
                 })
 
         # Badge 3: "Team Player"
@@ -299,7 +299,7 @@ def award_badges(reflection_prompts: list = None, reflection_answers: list = Non
                 badges.append({
                     "name": "Team Player",
                     "reason": "Your teamwork and collaboration made the difference!",
-                    "emoji": "ðŸ'¥"
+                    "emoji": "👥"
                 })
 
     # OLD: Fallback for backward compatibility (if no custom prompts)
@@ -312,7 +312,7 @@ def award_badges(reflection_prompts: list = None, reflection_answers: list = Non
             badges.append({
                 "name": "I Can Break It Down",
                 "reason": "You learned how to split big goals into manageable tasks.",
-                "emoji": "ðŸ§©"
+                "emoji": "🧩"
             })
 
         collaboration_keywords = ["team", "together", "helped", "worked with", "partner", "group", "collaborated", "coordinated", "communicated", "teammate"]
@@ -320,7 +320,7 @@ def award_badges(reflection_prompts: list = None, reflection_answers: list = Non
             badges.append({
                 "name": "Team Player",
                 "reason": "Your teamwork and collaboration made the difference!",
-                "emoji": "ðŸ'¥"
+                "emoji": "👥"
             })
 
     # Badge 2: "Planner Power" (independent, works same way)
@@ -329,7 +329,7 @@ def award_badges(reflection_prompts: list = None, reflection_answers: list = Non
         badges.append({
             "name": "Planner Power",
             "reason": "You're good at guessing how long things take!",
-            "emoji": "â°"
+            "emoji": "⏰"
         })
 
     return badges
